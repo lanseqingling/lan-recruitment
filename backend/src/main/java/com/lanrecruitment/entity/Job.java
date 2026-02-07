@@ -29,6 +29,9 @@ public class Job {
 
     private Integer status;
 
+    @TableField("audit_status")
+    private Integer auditStatus;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 
@@ -97,6 +100,14 @@ public class Job {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getAuditStatus() {
+        return auditStatus;
+    }
+
+    public void setAuditStatus(Integer auditStatus) {
+        this.auditStatus = auditStatus;
     }
 
     public LocalDateTime getCreatedAt() {

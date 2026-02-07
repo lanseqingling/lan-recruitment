@@ -6,16 +6,13 @@
       </div>
 
       <div class="header-center">
-        <el-input v-model="keyword" placeholder="搜索岗位 / 内容" clearable />
+        <el-input v-model="keyword" placeholder="搜索岗位 / 内容" clearable @keyup.enter="onSearch" />
       </div>
 
       <div class="header-right">
-        <el-select v-model="role" size="small" style="width: 110px" @change="onRoleChange">
-          <el-option label="求职者(USER)" value="USER" />
-          <el-option label="HR" value="HR" />
-          <el-option label="管理员(ADMIN)" value="ADMIN" />
-        </el-select>
+        <el-tag effect="plain">{{ roleText }}</el-tag>
         <el-button size="small" @click="go('/profile')">个人中心</el-button>
+        <el-button size="small" @click="onLogout">退出</el-button>
       </div>
     </el-header>
 
@@ -25,6 +22,7 @@
           <el-menu-item index="/home">首页</el-menu-item>
           <el-menu-item v-if="role === 'USER'" index="/resume">简历管理</el-menu-item>
           <el-menu-item v-if="role === 'HR'" index="/job">岗位管理</el-menu-item>
+          <el-menu-item v-if="role === 'ADMIN'" index="/audit">审核管理</el-menu-item>
           <el-menu-item v-if="role === 'ADMIN'" index="/tag">标签库管理</el-menu-item>
           <el-menu-item v-if="role === 'ADMIN'" index="/notice">公告管理</el-menu-item>
         </el-menu>
@@ -40,12 +38,20 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { logout } from '../api/auth'
 
 const router = useRouter()
 const route = useRoute()
 
 const keyword = ref('')
 const role = ref(localStorage.getItem('role') || 'USER')
+
+const roleText = computed(() => {
+  if (role.value === 'ADMIN') return '管理员'
+  if (role.value === 'HR') return 'HR'
+  return '求职者'
+})
 
 const activePath = computed(() => {
   return route.path === '/' ? '/home' : route.path
@@ -55,8 +61,19 @@ function go(path) {
   router.push(path)
 }
 
-function onRoleChange(val) {
-  localStorage.setItem('role', val)
+function onSearch() {
+  router.push({ path: '/home', query: { keyword: keyword.value } })
+}
+
+async function onLogout() {
+  try {
+    await logout()
+  } finally {
+    localStorage.removeItem('token')
+    localStorage.removeItem('role')
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  }
 }
 </script>
 

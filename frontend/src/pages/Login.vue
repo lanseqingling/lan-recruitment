@@ -4,13 +4,6 @@
       <div class="title">智能招聘系统</div>
       <div class="desc">毕业设计演示版（页面与接口骨架）</div>
 
-      <div class="role-switch">
-        <el-radio-group v-model="roleType">
-          <el-radio-button label="USER">我要找工作</el-radio-button>
-          <el-radio-button label="HR">我要招聘</el-radio-button>
-        </el-radio-group>
-      </div>
-
       <el-tabs v-model="loginType" class="tabs" stretch>
         <el-tab-pane label="邮箱验证码登录" name="email">
           <el-form :model="emailForm" label-position="top">
@@ -18,7 +11,11 @@
               <el-input v-model="emailForm.email" placeholder="请输入邮箱" />
             </el-form-item>
             <el-form-item label="验证码">
-              <el-input v-model="emailForm.code" placeholder="请输入验证码" />
+              <el-input v-model="emailForm.code" placeholder="请输入验证码">
+                <template #append>
+                  <el-button @click="onSendLoginCode">发送</el-button>
+                </template>
+              </el-input>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -43,18 +40,41 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { loginByEmail, loginByPassword, sendEmailCode } from '../api/auth'
+import { getMe } from '../api/user'
 
 const router = useRouter()
 
-const roleType = ref('USER')
-const loginType = ref('email')
+const loginType = ref('password')
 
 const emailForm = reactive({ email: '', code: '' })
 const pwdForm = reactive({ username: '', password: '' })
 
-function onLogin() {
-  localStorage.setItem('role', roleType.value)
-  router.push('/home')
+async function onSendLoginCode() {
+  if (!emailForm.email) {
+    ElMessage.warning('请先填写邮箱')
+    return
+  }
+  await sendEmailCode(emailForm.email, 'LOGIN')
+  ElMessage.success('验证码已发送')
+}
+
+async function onLogin() {
+  try {
+    let token = ''
+    if (loginType.value === 'email') {
+      token = await loginByEmail(emailForm.email, emailForm.code)
+    } else {
+      token = await loginByPassword(pwdForm.username, pwdForm.password)
+    }
+    localStorage.setItem('token', token)
+    const me = await getMe()
+    localStorage.setItem('role', me.role)
+    router.push('/home')
+  } catch (e) {
+    return
+  }
 }
 
 function goRegister() {
@@ -86,10 +106,6 @@ function goRegister() {
   font-size: 12px;
   color: #909399;
   margin-bottom: 14px;
-}
-
-.role-switch {
-  margin-bottom: 12px;
 }
 
 .tabs {

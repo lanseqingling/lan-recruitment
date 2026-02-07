@@ -23,6 +23,14 @@ public class SysUser {
 
     private Integer status;
 
+    @TableField("audit_status")
+    private Integer auditStatus;
+
+    @TableField("real_name")
+    private String realName;
+
+    private String phone;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 
@@ -83,6 +91,30 @@ public class SysUser {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getAuditStatus() {
+        return auditStatus;
+    }
+
+    public void setAuditStatus(Integer auditStatus) {
+        this.auditStatus = auditStatus;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public LocalDateTime getCreatedAt() {

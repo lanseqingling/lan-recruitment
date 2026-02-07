@@ -1,20 +1,87 @@
 package com.lanrecruitment.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.lanrecruitment.dto.ChangePasswordDTO;
+import com.lanrecruitment.dto.UpdateProfileDTO;
+import com.lanrecruitment.entity.SysUser;
+import com.lanrecruitment.exception.BizException;
+import com.lanrecruitment.mapper.SysUserMapper;
 import com.lanrecruitment.service.UserService;
+import com.lanrecruitment.utils.PasswordUtil;
 import com.lanrecruitment.vo.CurrentUserVO;
+import com.lanrecruitment.vo.UserProfileVO;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private final SysUserMapper sysUserMapper;
+
+    public UserServiceImpl(SysUserMapper sysUserMapper) {
+        this.sysUserMapper = sysUserMapper;
+    }
+
     @Override
     public CurrentUserVO getMe() {
+        SysUser u = currentUser();
         CurrentUserVO vo = new CurrentUserVO();
-        if (StpUtil.isLogin()) {
-            vo.setId(StpUtil.getLoginIdAsLong());
-        }
-        vo.setUsername("demo");
-        vo.setRole("USER");
+        vo.setId(u.getId());
+        vo.setUsername(u.getUsername());
+        vo.setRole(u.getRole());
         return vo;
+    }
+
+    @Override
+    public UserProfileVO getProfile() {
+        SysUser u = currentUser();
+        UserProfileVO vo = new UserProfileVO();
+        vo.setId(u.getId());
+        vo.setUsername(u.getUsername());
+        vo.setEmail(u.getEmail());
+        vo.setRole(u.getRole());
+        vo.setAvatar(u.getAvatar());
+        vo.setStatus(u.getStatus());
+        vo.setAuditStatus(u.getAuditStatus());
+        vo.setRealName(u.getRealName());
+        vo.setPhone(u.getPhone());
+        return vo;
+    }
+
+    @Override
+    public void updateProfile(UpdateProfileDTO dto) {
+        SysUser u = currentUser();
+        u.setRealName(dto.getRealName());
+        u.setPhone(dto.getPhone());
+        u.setUpdatedAt(LocalDateTime.now());
+        sysUserMapper.updateById(u);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordDTO dto) {
+        SysUser u = currentUser();
+        if (!PasswordUtil.matches(dto.getOldPassword(), u.getPassword())) {
+            throw new BizException(400, "旧密码错误");
+        }
+        u.setPassword(PasswordUtil.hash(dto.getNewPassword()));
+        u.setUpdatedAt(LocalDateTime.now());
+        sysUserMapper.updateById(u);
+    }
+
+    @Override
+    public void updateAvatar(String avatarUrl) {
+        SysUser u = currentUser();
+        u.setAvatar(avatarUrl);
+        u.setUpdatedAt(LocalDateTime.now());
+        sysUserMapper.updateById(u);
+    }
+
+    private SysUser currentUser() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        SysUser u = sysUserMapper.selectById(userId);
+        if (u == null) {
+            throw new BizException(401, "未登录");
+        }
+        return u;
     }
 }

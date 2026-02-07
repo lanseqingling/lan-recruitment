@@ -2,6 +2,7 @@ package com.lanrecruitment.dto;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 public class RegisterDTO {
     @NotBlank(message = "用户名不能为空")
@@ -16,6 +17,9 @@ public class RegisterDTO {
 
     @NotBlank(message = "验证码不能为空")
     private String code;
+
+    @Pattern(regexp = "USER|HR", message = "角色只能为USER或HR")
+    private String role;
 
     public String getUsername() {
         return username;
@@ -47,5 +51,13 @@ public class RegisterDTO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

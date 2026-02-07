@@ -13,19 +13,33 @@
           <el-form-item label="岗位类型">
             <el-input v-model="filters.jobType" placeholder="如：后端开发" clearable />
           </el-form-item>
-          <el-button type="primary" style="width: 100%" @click="onSearch">查询</el-button>
+          <el-button type="primary" style="width: 100%" :loading="loading" @click="onSearch">查询</el-button>
         </el-form>
       </el-card>
     </div>
 
     <div class="right">
-      <el-card class="mb">
-        <template #header>推荐岗位（占位）</template>
+      <el-card v-if="role === 'USER'" class="mb">
+        <template #header>推荐岗位</template>
         <el-alert
           type="info"
           :closable="false"
-          title="推荐结果将基于余弦相似度对岗位与简历标签向量计算得分，并按得分排序展示。"
+          title="推荐结果基于余弦相似度：简历标签向量 × 岗位标签向量，并按得分降序展示。"
         />
+        <div v-if="recommendJobs.length === 0" class="empty">暂无推荐（请先创建简历并配置标签）</div>
+        <el-table v-else :data="recommendJobs" size="small" style="width: 100%; margin-top: 10px">
+          <el-table-column prop="jobName" label="岗位" min-width="160" />
+          <el-table-column prop="city" label="城市" width="90" />
+          <el-table-column prop="jobType" label="类型" width="90" />
+          <el-table-column prop="salaryRange" label="薪资" width="120" />
+          <el-table-column prop="matchScore" label="匹配度" width="90" />
+          <el-table-column label="操作" width="140">
+            <template #default="{ row }">
+              <el-button size="small" @click="openDetail(row)">详情</el-button>
+              <el-button size="small" type="primary" @click="onApply(row)">投递</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-card>
 
       <el-card v-for="job in jobs" :key="job.id" class="mb">
@@ -37,58 +51,115 @@
         </div>
         <div class="job-desc">{{ job.description }}</div>
         <div class="job-actions">
-          <el-tag type="success">匹配度：{{ job.matchScore }}</el-tag>
-          <el-button size="small">查看详情</el-button>
-          <el-button size="small" type="primary">投递简历</el-button>
+          <el-button size="small" @click="openDetail(job)">查看详情</el-button>
+          <el-button v-if="role === 'USER'" size="small" type="primary" @click="onApply(job)">投递简历</el-button>
         </div>
       </el-card>
 
-      <el-button style="width: 100%" @click="loadMore">加载更多</el-button>
+      <el-button style="width: 100%" :disabled="loading">加载更多</el-button>
     </div>
   </div>
+
+  <el-dialog v-model="detailVisible" title="岗位详情" width="520px">
+    <el-descriptions v-if="currentJob" :column="1" border>
+      <el-descriptions-item label="岗位名称">{{ currentJob.jobName }}</el-descriptions-item>
+      <el-descriptions-item label="城市">{{ currentJob.city }}</el-descriptions-item>
+      <el-descriptions-item label="类型">{{ currentJob.jobType }}</el-descriptions-item>
+      <el-descriptions-item label="薪资">{{ currentJob.salaryRange }}</el-descriptions-item>
+      <el-descriptions-item v-if="currentJob.matchScore != null" label="匹配度">{{ currentJob.matchScore }}</el-descriptions-item>
+      <el-descriptions-item label="描述">{{ currentJob.description }}</el-descriptions-item>
+    </el-descriptions>
+    <template #footer>
+      <el-button @click="detailVisible = false">关闭</el-button>
+      <el-button v-if="role === 'USER'" type="primary" @click="onApply(currentJob)">投递</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { listJobs, recommendJobs as fetchRecommendJobsApi } from '../api/job'
+import { applyJob, listMyResumes } from '../api/resume'
 
 const filters = reactive({ keyword: '', city: '', jobType: '' })
+const route = useRoute()
+const router = useRouter()
 
-const jobs = ref([
-  {
-    id: 1,
-    jobName: '后端开发工程师',
-    city: '北京',
-    jobType: '后端',
-    salaryRange: '15k-25k',
-    matchScore: '0.8231',
-    description: '岗位描述占位：Java/Spring Boot/MySQL，熟悉常见后端开发流程。'
-  },
-  {
-    id: 2,
-    jobName: '前端开发工程师',
-    city: '上海',
-    jobType: '前端',
-    salaryRange: '12k-20k',
-    matchScore: '0.7645',
-    description: '岗位描述占位：Vue 3/Vite/Element Plus，能独立完成页面开发。'
+const role = ref(localStorage.getItem('role') || 'USER')
+const loading = ref(false)
+
+const jobs = ref([])
+const recommendJobs = ref([])
+const resumes = ref([])
+
+const detailVisible = ref(false)
+const currentJob = ref(null)
+
+async function fetchPublicJobs() {
+  loading.value = true
+  try {
+    jobs.value = await listJobs({
+      keyword: filters.keyword,
+      city: filters.city,
+      jobType: filters.jobType
+    })
+  } finally {
+    loading.value = false
   }
-])
-
-function onSearch() {
 }
 
-function loadMore() {
-  const nextId = jobs.value.length + 1
-  jobs.value.push({
-    id: nextId,
-    jobName: '岗位标题（占位）',
-    city: filters.city || '城市',
-    jobType: filters.jobType || '类型',
-    salaryRange: '薪资范围',
-    matchScore: '0.0000',
-    description: '岗位描述占位。'
-  })
+async function fetchRecommendJobs() {
+  if (role.value !== 'USER') return
+  try {
+    recommendJobs.value = await fetchRecommendJobsApi()
+  } catch (e) {
+    recommendJobs.value = []
+  }
 }
+
+async function onSearch() {
+  router.push({ path: '/home', query: { keyword: filters.keyword || '' } })
+  await fetchPublicJobs()
+}
+
+function openDetail(job) {
+  currentJob.value = job
+  detailVisible.value = true
+}
+
+async function ensureResumes() {
+  if (resumes.value.length > 0) return
+  resumes.value = await listMyResumes()
+}
+
+async function onApply(job) {
+  if (!job) return
+  await ensureResumes()
+  if (resumes.value.length === 0) {
+    ElMessage.warning('请先创建简历')
+    router.push('/resume')
+    return
+  }
+  const defaultResume = resumes.value.find((r) => r.isDefault === 1) || resumes.value[0]
+  await applyJob(job.id, defaultResume.id)
+  ElMessage.success('已投递')
+}
+
+onMounted(async () => {
+  filters.keyword = route.query.keyword || ''
+  await fetchPublicJobs()
+  await fetchRecommendJobs()
+})
+
+watch(
+  () => route.query.keyword,
+  async (val) => {
+    filters.keyword = val || ''
+    await fetchPublicJobs()
+  }
+)
 </script>
 
 <style scoped>
@@ -133,5 +204,11 @@ function loadMore() {
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.empty {
+  padding: 10px 0;
+  color: #909399;
+  font-size: 12px;
 }
 </style>

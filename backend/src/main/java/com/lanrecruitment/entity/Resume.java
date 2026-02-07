@@ -22,13 +22,36 @@ public class Resume {
 
     private String gender;
 
+    private String city;
+
     private String education;
 
     @TableField("work_years")
     private String workYears;
 
+    @TableField("expect_job_type")
+    private String expectJobType;
+
+    @TableField("expect_salary")
+    private String expectSalary;
+
     @TableField("work_desc")
     private String workDesc;
+
+    @TableField("file_name")
+    private String fileName;
+
+    @TableField("file_url")
+    private String fileUrl;
+
+    @TableField("file_type")
+    private String fileType;
+
+    @TableField("file_size")
+    private Long fileSize;
+
+    @TableField("is_default")
+    private Integer isDefault;
 
     private Integer status;
 
@@ -86,6 +109,14 @@ public class Resume {
         this.education = education;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
     public String getWorkYears() {
         return workYears;
     }
@@ -94,12 +125,68 @@ public class Resume {
         this.workYears = workYears;
     }
 
+    public String getExpectJobType() {
+        return expectJobType;
+    }
+
+    public void setExpectJobType(String expectJobType) {
+        this.expectJobType = expectJobType;
+    }
+
+    public String getExpectSalary() {
+        return expectSalary;
+    }
+
+    public void setExpectSalary(String expectSalary) {
+        this.expectSalary = expectSalary;
+    }
+
     public String getWorkDesc() {
         return workDesc;
     }
 
     public void setWorkDesc(String workDesc) {
         this.workDesc = workDesc;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(String fileType) {
+        this.fileType = fileType;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public Integer getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(Integer isDefault) {
+        this.isDefault = isDefault;
     }
 
     public Integer getStatus() {

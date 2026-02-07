@@ -9,11 +9,15 @@ CREATE TABLE IF NOT EXISTS sys_user (
     role VARCHAR(20) NOT NULL COMMENT '角色：USER / HR / ADMIN',
     avatar VARCHAR(255) COMMENT '头像地址',
     status TINYINT DEFAULT 1 COMMENT '账号状态：1正常 0禁用',
+    audit_status TINYINT DEFAULT 1 COMMENT '审核状态：0待审核 1通过 2拒绝（HR/岗位审核用）',
+    real_name VARCHAR(20) COMMENT '真实姓名',
+    phone VARCHAR(20) COMMENT '手机号',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     UNIQUE KEY uk_username (username),
     UNIQUE KEY uk_email (email),
-    KEY idx_role (role)
+    KEY idx_role (role),
+    KEY idx_audit_status (audit_status)
 ) COMMENT='系统用户表';
 
 CREATE TABLE IF NOT EXISTS tag (
@@ -32,13 +36,22 @@ CREATE TABLE IF NOT EXISTS resume (
     resume_name VARCHAR(100) NOT NULL COMMENT '简历名称（如“我的技术简历”）',
     real_name VARCHAR(20) NOT NULL COMMENT '姓名',
     gender VARCHAR(10) COMMENT '性别：MALE/FEMALE',
+    city VARCHAR(50) COMMENT '所在城市',
     education VARCHAR(20) COMMENT '学历（本科/硕士等）',
     work_years VARCHAR(20) COMMENT '工作年限（如3年）',
+    expect_job_type VARCHAR(50) COMMENT '期望岗位类型',
+    expect_salary VARCHAR(50) COMMENT '期望薪资',
     work_desc TEXT COMMENT '工作描述',
+    file_name VARCHAR(255) COMMENT '附件简历文件名',
+    file_url VARCHAR(255) COMMENT '附件简历访问URL',
+    file_type VARCHAR(20) COMMENT '附件简历类型（pdf/jpg/png）',
+    file_size BIGINT COMMENT '附件简历大小（字节）',
+    is_default TINYINT DEFAULT 0 COMMENT '是否默认简历：1是 0否',
     status TINYINT DEFAULT 1 COMMENT '状态：0无效/1有效',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    KEY idx_user_id (user_id)
+    KEY idx_user_id (user_id),
+    KEY idx_user_default (user_id, is_default)
 ) COMMENT='简历表';
 
 CREATE TABLE IF NOT EXISTS resume_tag (
@@ -61,9 +74,11 @@ CREATE TABLE IF NOT EXISTS job (
     job_type VARCHAR(50) COMMENT '岗位类型',
     description TEXT COMMENT '岗位描述',
     status TINYINT DEFAULT 1 COMMENT '岗位状态：1招聘中 0已下架',
+    audit_status TINYINT DEFAULT 0 COMMENT '审核状态：0待审核 1通过 2拒绝',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     KEY idx_hr_id (hr_id),
+    KEY idx_audit_status (audit_status),
     KEY idx_city_type (city, job_type)
 ) COMMENT='招聘岗位表';
 
@@ -116,3 +131,21 @@ CREATE TABLE IF NOT EXISTS login_log (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '登录时间',
     KEY idx_user_id (user_id)
 ) COMMENT='用户登录日志表';
+
+ALTER TABLE sys_user
+    ADD COLUMN IF NOT EXISTS audit_status TINYINT DEFAULT 1 COMMENT '审核状态：0待审核 1通过 2拒绝（HR/岗位审核用）',
+    ADD COLUMN IF NOT EXISTS real_name VARCHAR(20) COMMENT '真实姓名',
+    ADD COLUMN IF NOT EXISTS phone VARCHAR(20) COMMENT '手机号';
+
+ALTER TABLE resume
+    ADD COLUMN IF NOT EXISTS city VARCHAR(50) COMMENT '所在城市',
+    ADD COLUMN IF NOT EXISTS expect_job_type VARCHAR(50) COMMENT '期望岗位类型',
+    ADD COLUMN IF NOT EXISTS expect_salary VARCHAR(50) COMMENT '期望薪资',
+    ADD COLUMN IF NOT EXISTS file_name VARCHAR(255) COMMENT '附件简历文件名',
+    ADD COLUMN IF NOT EXISTS file_url VARCHAR(255) COMMENT '附件简历访问URL',
+    ADD COLUMN IF NOT EXISTS file_type VARCHAR(20) COMMENT '附件简历类型（pdf/jpg/png）',
+    ADD COLUMN IF NOT EXISTS file_size BIGINT COMMENT '附件简历大小（字节）',
+    ADD COLUMN IF NOT EXISTS is_default TINYINT DEFAULT 0 COMMENT '是否默认简历：1是 0否';
+
+ALTER TABLE job
+    ADD COLUMN IF NOT EXISTS audit_status TINYINT DEFAULT 0 COMMENT '审核状态：0待审核 1通过 2拒绝';

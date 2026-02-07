@@ -1,0 +1,12 @@
+package com.lanrecruitment.service;
+
+import com.lanrecruitment.vo.JobCardVO;
+import java.util.List;
+
+public interface JobBrowseService {
+    List<JobCardVO> listPublic(String keyword, String city, String jobType);
+
+    JobCardVO detail(Long jobId);
+
+    List<JobCardVO> recommend(Long resumeId);
+}

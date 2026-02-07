@@ -1,0 +1,72 @@
+package com.lanrecruitment.controller;
+
+import com.lanrecruitment.common.Response;
+import com.lanrecruitment.dto.IdDTO;
+import com.lanrecruitment.dto.ResumeSaveDTO;
+import com.lanrecruitment.dto.ResumeTagSaveDTO;
+import com.lanrecruitment.service.ResumeService;
+import com.lanrecruitment.vo.ResumeDetailVO;
+import com.lanrecruitment.vo.ResumeVO;
+import java.util.List;
+import javax.validation.Valid;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+@Validated
+@RestController
+public class UserResumeController {
+
+    private final ResumeService resumeService;
+
+    public UserResumeController(ResumeService resumeService) {
+        this.resumeService = resumeService;
+    }
+
+    @GetMapping("/api/user/resume/list")
+    public Response<List<ResumeVO>> listMy() {
+        return Response.ok(resumeService.listMy());
+    }
+
+    @GetMapping("/api/user/resume/detail")
+    public Response<ResumeDetailVO> detail(@Valid IdDTO dto) {
+        return Response.ok(resumeService.detail(dto));
+    }
+
+    @PostMapping("/api/user/resume/save")
+    public Response<Void> save(@Valid @RequestBody ResumeSaveDTO dto) {
+        resumeService.save(dto);
+        return Response.ok(null);
+    }
+
+    @PostMapping("/api/user/resume/delete")
+    public Response<Void> delete(@Valid @RequestBody IdDTO dto) {
+        resumeService.delete(dto);
+        return Response.ok(null);
+    }
+
+    @PostMapping("/api/user/resume/set-default")
+    public Response<Void> setDefault(@Valid @RequestBody IdDTO dto) {
+        resumeService.setDefault(dto);
+        return Response.ok(null);
+    }
+
+    @PostMapping("/api/user/resume/tags/save")
+    public Response<Void> saveTags(@Valid @RequestBody ResumeTagSaveDTO dto) {
+        resumeService.saveTags(dto);
+        return Response.ok(null);
+    }
+
+    @PostMapping("/api/user/resume/file/upload")
+    public Response<ResumeVO> uploadAttachment(
+            @RequestParam("resumeId") Long resumeId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return Response.ok(resumeService.uploadAttachment(resumeId, file));
+    }
+}
+
