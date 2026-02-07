@@ -1,8 +1,8 @@
 package com.lanrecruitment.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.entity.SysUser;
-import com.lanrecruitment.entity.Tag;
+import com.lanrecruitment.domain.entity.SysUser;
+import com.lanrecruitment.domain.entity.Tag;
 import com.lanrecruitment.mapper.SysUserMapper;
 import com.lanrecruitment.mapper.TagMapper;
 import com.lanrecruitment.utils.PasswordUtil;

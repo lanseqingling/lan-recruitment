@@ -1,6 +1,6 @@
 package com.lanrecruitment.service;
 
-import com.lanrecruitment.vo.JobCardVO;
+import com.lanrecruitment.domain.vo.JobCardVO;
 import java.util.List;
 
 public interface JobBrowseService {

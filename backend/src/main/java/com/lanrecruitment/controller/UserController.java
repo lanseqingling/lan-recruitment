@@ -1,12 +1,12 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.ChangePasswordDTO;
-import com.lanrecruitment.dto.UpdateProfileDTO;
+import com.lanrecruitment.domain.dto.ChangePasswordDTO;
+import com.lanrecruitment.domain.dto.UpdateProfileDTO;
 import com.lanrecruitment.service.FileStorageService;
 import com.lanrecruitment.service.UserService;
-import com.lanrecruitment.vo.CurrentUserVO;
-import com.lanrecruitment.vo.UserProfileVO;
+import com.lanrecruitment.domain.vo.CurrentUserVO;
+import com.lanrecruitment.domain.vo.UserProfileVO;
 import javax.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

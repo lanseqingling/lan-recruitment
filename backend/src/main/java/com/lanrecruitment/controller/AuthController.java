@@ -1,10 +1,10 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.LoginByEmailDTO;
-import com.lanrecruitment.dto.LoginByPasswordDTO;
-import com.lanrecruitment.dto.RegisterDTO;
-import com.lanrecruitment.dto.SendEmailCodeDTO;
+import com.lanrecruitment.domain.dto.LoginByEmailDTO;
+import com.lanrecruitment.domain.dto.LoginByPasswordDTO;
+import com.lanrecruitment.domain.dto.RegisterDTO;
+import com.lanrecruitment.domain.dto.SendEmailCodeDTO;
 import com.lanrecruitment.service.AuthService;
 import com.lanrecruitment.service.EmailCodeService;
 import javax.validation.Valid;

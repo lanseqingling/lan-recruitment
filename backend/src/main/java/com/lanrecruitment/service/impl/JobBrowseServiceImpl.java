@@ -2,14 +2,14 @@ package com.lanrecruitment.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.entity.Job;
-import com.lanrecruitment.entity.Resume;
+import com.lanrecruitment.domain.entity.Job;
+import com.lanrecruitment.domain.entity.Resume;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.JobMapper;
 import com.lanrecruitment.mapper.ResumeMapper;
 import com.lanrecruitment.service.JobBrowseService;
 import com.lanrecruitment.service.MatchService;
-import com.lanrecruitment.vo.JobCardVO;
+import com.lanrecruitment.domain.vo.JobCardVO;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -1,9 +1,9 @@
 package com.lanrecruitment.service;
 
-import com.lanrecruitment.dto.ChangePasswordDTO;
-import com.lanrecruitment.dto.UpdateProfileDTO;
-import com.lanrecruitment.vo.CurrentUserVO;
-import com.lanrecruitment.vo.UserProfileVO;
+import com.lanrecruitment.domain.dto.ChangePasswordDTO;
+import com.lanrecruitment.domain.dto.UpdateProfileDTO;
+import com.lanrecruitment.domain.vo.CurrentUserVO;
+import com.lanrecruitment.domain.vo.UserProfileVO;
 
 public interface UserService {
     CurrentUserVO getMe();

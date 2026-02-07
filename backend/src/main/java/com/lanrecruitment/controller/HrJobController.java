@@ -1,14 +1,14 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.ApplyStatusUpdateDTO;
-import com.lanrecruitment.dto.IdDTO;
-import com.lanrecruitment.dto.JobSaveDTO;
-import com.lanrecruitment.dto.JobTagSaveDTO;
+import com.lanrecruitment.domain.dto.ApplyStatusUpdateDTO;
+import com.lanrecruitment.domain.dto.IdDTO;
+import com.lanrecruitment.domain.dto.JobSaveDTO;
+import com.lanrecruitment.domain.dto.JobTagSaveDTO;
 import com.lanrecruitment.service.HrJobService;
-import com.lanrecruitment.vo.HrJobApplicationVO;
-import com.lanrecruitment.vo.HrJobVO;
-import com.lanrecruitment.vo.JobTagVO;
+import com.lanrecruitment.domain.vo.HrJobApplicationVO;
+import com.lanrecruitment.domain.vo.HrJobVO;
+import com.lanrecruitment.domain.vo.JobTagVO;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;

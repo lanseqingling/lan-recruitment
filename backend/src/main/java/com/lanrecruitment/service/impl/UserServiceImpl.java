@@ -1,15 +1,15 @@
 package com.lanrecruitment.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.lanrecruitment.dto.ChangePasswordDTO;
-import com.lanrecruitment.dto.UpdateProfileDTO;
-import com.lanrecruitment.entity.SysUser;
+import com.lanrecruitment.domain.dto.ChangePasswordDTO;
+import com.lanrecruitment.domain.dto.UpdateProfileDTO;
+import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.SysUserMapper;
 import com.lanrecruitment.service.UserService;
 import com.lanrecruitment.utils.PasswordUtil;
-import com.lanrecruitment.vo.CurrentUserVO;
-import com.lanrecruitment.vo.UserProfileVO;
+import com.lanrecruitment.domain.vo.CurrentUserVO;
+import com.lanrecruitment.domain.vo.UserProfileVO;
 import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 

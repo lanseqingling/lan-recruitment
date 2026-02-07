@@ -1,9 +1,9 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.IdDTO;
-import com.lanrecruitment.dto.NoticeSaveDTO;
-import com.lanrecruitment.entity.Notice;
+import com.lanrecruitment.domain.dto.IdDTO;
+import com.lanrecruitment.domain.dto.NoticeSaveDTO;
+import com.lanrecruitment.domain.entity.Notice;
 import com.lanrecruitment.service.NoticeService;
 import java.util.List;
 import javax.validation.Valid;

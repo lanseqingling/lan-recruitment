@@ -1,7 +1,7 @@
 package com.lanrecruitment.config;
 
 import cn.dev33.satoken.stp.StpInterface;
-import com.lanrecruitment.entity.SysUser;
+import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.mapper.SysUserMapper;
 import java.util.Collections;
 import java.util.List;

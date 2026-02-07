@@ -1,10 +1,10 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.AuditDecisionDTO;
+import com.lanrecruitment.domain.dto.AuditDecisionDTO;
 import com.lanrecruitment.service.AdminAuditService;
-import com.lanrecruitment.vo.AdminHrAuditVO;
-import com.lanrecruitment.vo.AdminJobAuditVO;
+import com.lanrecruitment.domain.vo.AdminHrAuditVO;
+import com.lanrecruitment.domain.vo.AdminJobAuditVO;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;

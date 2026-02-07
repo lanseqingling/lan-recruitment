@@ -2,10 +2,10 @@ package com.lanrecruitment.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.dto.ApplyJobDTO;
-import com.lanrecruitment.entity.Job;
-import com.lanrecruitment.entity.JobApply;
-import com.lanrecruitment.entity.Resume;
+import com.lanrecruitment.domain.dto.ApplyJobDTO;
+import com.lanrecruitment.domain.entity.Job;
+import com.lanrecruitment.domain.entity.JobApply;
+import com.lanrecruitment.domain.entity.Resume;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.JobApplyMapper;
 import com.lanrecruitment.mapper.JobMapper;

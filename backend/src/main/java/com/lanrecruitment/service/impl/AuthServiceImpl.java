@@ -2,10 +2,10 @@ package com.lanrecruitment.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.dto.LoginByEmailDTO;
-import com.lanrecruitment.dto.LoginByPasswordDTO;
-import com.lanrecruitment.dto.RegisterDTO;
-import com.lanrecruitment.entity.SysUser;
+import com.lanrecruitment.domain.dto.LoginByEmailDTO;
+import com.lanrecruitment.domain.dto.LoginByPasswordDTO;
+import com.lanrecruitment.domain.dto.RegisterDTO;
+import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.SysUserMapper;
 import com.lanrecruitment.service.AuthService;

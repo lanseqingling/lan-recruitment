@@ -1,9 +1,9 @@
 package com.lanrecruitment.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.entity.JobTag;
-import com.lanrecruitment.entity.MatchScore;
-import com.lanrecruitment.entity.ResumeTag;
+import com.lanrecruitment.domain.entity.JobTag;
+import com.lanrecruitment.domain.entity.MatchScore;
+import com.lanrecruitment.domain.entity.ResumeTag;
 import com.lanrecruitment.mapper.JobTagMapper;
 import com.lanrecruitment.mapper.MatchScoreMapper;
 import com.lanrecruitment.mapper.ResumeTagMapper;

@@ -1,8 +1,8 @@
 package com.lanrecruitment.service;
 
-import com.lanrecruitment.dto.IdDTO;
-import com.lanrecruitment.dto.TagSaveDTO;
-import com.lanrecruitment.entity.Tag;
+import com.lanrecruitment.domain.dto.IdDTO;
+import com.lanrecruitment.domain.dto.TagSaveDTO;
+import com.lanrecruitment.domain.entity.Tag;
 import java.util.List;
 
 public interface TagService {

@@ -1,8 +1,8 @@
 package com.lanrecruitment.service;
 
-import com.lanrecruitment.dto.LoginByEmailDTO;
-import com.lanrecruitment.dto.LoginByPasswordDTO;
-import com.lanrecruitment.dto.RegisterDTO;
+import com.lanrecruitment.domain.dto.LoginByEmailDTO;
+import com.lanrecruitment.domain.dto.LoginByPasswordDTO;
+import com.lanrecruitment.domain.dto.RegisterDTO;
 
 public interface AuthService {
     String loginByPassword(LoginByPasswordDTO dto);

@@ -2,7 +2,7 @@ package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
 import com.lanrecruitment.service.JobBrowseService;
-import com.lanrecruitment.vo.JobCardVO;
+import com.lanrecruitment.domain.vo.JobCardVO;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

@@ -1,15 +1,15 @@
 package com.lanrecruitment.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.dto.AuditDecisionDTO;
-import com.lanrecruitment.entity.Job;
-import com.lanrecruitment.entity.SysUser;
+import com.lanrecruitment.domain.dto.AuditDecisionDTO;
+import com.lanrecruitment.domain.entity.Job;
+import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.JobMapper;
 import com.lanrecruitment.mapper.SysUserMapper;
 import com.lanrecruitment.service.AdminAuditService;
-import com.lanrecruitment.vo.AdminHrAuditVO;
-import com.lanrecruitment.vo.AdminJobAuditVO;
+import com.lanrecruitment.domain.vo.AdminHrAuditVO;
+import com.lanrecruitment.domain.vo.AdminJobAuditVO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

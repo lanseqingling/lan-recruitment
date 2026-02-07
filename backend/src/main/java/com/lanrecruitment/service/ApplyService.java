@@ -1,7 +1,7 @@
 package com.lanrecruitment.service;
 
-import com.lanrecruitment.dto.ApplyJobDTO;
-import com.lanrecruitment.entity.JobApply;
+import com.lanrecruitment.domain.dto.ApplyJobDTO;
+import com.lanrecruitment.domain.entity.JobApply;
 import java.util.List;
 
 public interface ApplyService {

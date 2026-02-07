@@ -1,9 +1,9 @@
 package com.lanrecruitment.service;
 
-import com.lanrecruitment.dto.AuditDecisionDTO;
+import com.lanrecruitment.domain.dto.AuditDecisionDTO;
 import java.util.List;
-import com.lanrecruitment.vo.AdminHrAuditVO;
-import com.lanrecruitment.vo.AdminJobAuditVO;
+import com.lanrecruitment.domain.vo.AdminHrAuditVO;
+import com.lanrecruitment.domain.vo.AdminJobAuditVO;
 
 public interface AdminAuditService {
     List<AdminHrAuditVO> listPendingHr();

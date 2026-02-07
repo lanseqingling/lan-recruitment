@@ -1,12 +1,12 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.IdDTO;
-import com.lanrecruitment.dto.ResumeSaveDTO;
-import com.lanrecruitment.dto.ResumeTagSaveDTO;
+import com.lanrecruitment.domain.dto.IdDTO;
+import com.lanrecruitment.domain.dto.ResumeSaveDTO;
+import com.lanrecruitment.domain.dto.ResumeTagSaveDTO;
 import com.lanrecruitment.service.ResumeService;
-import com.lanrecruitment.vo.ResumeDetailVO;
-import com.lanrecruitment.vo.ResumeVO;
+import com.lanrecruitment.domain.vo.ResumeDetailVO;
+import com.lanrecruitment.domain.vo.ResumeVO;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;

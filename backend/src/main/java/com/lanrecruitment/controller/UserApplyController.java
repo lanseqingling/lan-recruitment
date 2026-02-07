@@ -1,8 +1,8 @@
 package com.lanrecruitment.controller;
 
 import com.lanrecruitment.common.Response;
-import com.lanrecruitment.dto.ApplyJobDTO;
-import com.lanrecruitment.entity.JobApply;
+import com.lanrecruitment.domain.dto.ApplyJobDTO;
+import com.lanrecruitment.domain.entity.JobApply;
 import com.lanrecruitment.service.ApplyService;
 import java.util.List;
 import javax.validation.Valid;

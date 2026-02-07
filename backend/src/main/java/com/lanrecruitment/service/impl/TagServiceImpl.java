@@ -1,9 +1,9 @@
 package com.lanrecruitment.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lanrecruitment.dto.IdDTO;
-import com.lanrecruitment.dto.TagSaveDTO;
-import com.lanrecruitment.entity.Tag;
+import com.lanrecruitment.domain.dto.IdDTO;
+import com.lanrecruitment.domain.dto.TagSaveDTO;
+import com.lanrecruitment.domain.entity.Tag;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.TagMapper;
 import com.lanrecruitment.service.TagService;
