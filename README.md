@@ -21,10 +21,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 email:
-  host: smtp.qq.com # 邮箱host（以 QQ 邮箱为例）
-  from: # 修改为你的邮箱账号
-  password: # 邮箱服务商提供的 SMTP 授权码/应用专用密码。
-  username: # 修改为你的邮箱账号
+  host: # 你的 SMTP 服务器地址
+  from: # 你的发件人邮箱地址
+  password: # 你的邮箱服务商 SMTP 授权码
+  username: # 你的 SMTP 服务器认证账号
 ```
 
 3. 执行启动命令：
