@@ -1,4 +1,4 @@
-# lan-recruitment（智能招聘系统）
+# lan-recruitment（毕业设计-智能招聘系统）
 
 本仓库为 Monorepo 结构：
 
