@@ -1,0 +1,69 @@
+package com.lanrecruitment.controller;
+
+import com.lanrecruitment.common.Response;
+import com.lanrecruitment.dto.ApplyStatusUpdateDTO;
+import com.lanrecruitment.dto.IdDTO;
+import com.lanrecruitment.dto.JobSaveDTO;
+import com.lanrecruitment.dto.JobTagSaveDTO;
+import com.lanrecruitment.service.HrJobService;
+import com.lanrecruitment.vo.HrJobApplicationVO;
+import com.lanrecruitment.vo.HrJobVO;
+import com.lanrecruitment.vo.JobTagVO;
+import java.util.List;
+import javax.validation.Valid;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Validated
+@RestController
+public class HrJobController {
+
+    private final HrJobService hrJobService;
+
+    public HrJobController(HrJobService hrJobService) {
+        this.hrJobService = hrJobService;
+    }
+
+    @GetMapping("/api/hr/job/list")
+    public Response<List<HrJobVO>> listMy() {
+        return Response.ok(hrJobService.listMy());
+    }
+
+    @PostMapping("/api/hr/job/save")
+    public Response<Void> save(@Valid @RequestBody JobSaveDTO dto) {
+        hrJobService.save(dto);
+        return Response.ok(null);
+    }
+
+    @PostMapping("/api/hr/job/delete")
+    public Response<Void> delete(@Valid @RequestBody IdDTO dto) {
+        hrJobService.delete(dto);
+        return Response.ok(null);
+    }
+
+    @PostMapping("/api/hr/job/tags/save")
+    public Response<Void> saveTags(@Valid @RequestBody JobTagSaveDTO dto) {
+        hrJobService.saveTags(dto);
+        return Response.ok(null);
+    }
+
+    @GetMapping("/api/hr/job/tags")
+    public Response<List<JobTagVO>> listJobTags(@RequestParam("jobId") Long jobId) {
+        return Response.ok(hrJobService.listJobTags(jobId));
+    }
+
+    @GetMapping("/api/hr/job/applications")
+    public Response<List<HrJobApplicationVO>> listApplications(@RequestParam("jobId") Long jobId) {
+        return Response.ok(hrJobService.listApplications(jobId));
+    }
+
+    @PostMapping("/api/hr/job/apply/status")
+    public Response<Void> updateApplyStatus(@Valid @RequestBody ApplyStatusUpdateDTO dto) {
+        hrJobService.updateApplyStatus(dto);
+        return Response.ok(null);
+    }
+}

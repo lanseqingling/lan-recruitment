@@ -1,0 +1,102 @@
+<template>
+  <div class="wrap">
+    <el-card class="card">
+      <div class="title">注册账号</div>
+      <div class="desc">用户名 + 密码 + 邮箱 + 验证码</div>
+
+      <div class="role-switch">
+        <el-radio-group v-model="form.role">
+          <el-radio-button label="USER">求职者</el-radio-button>
+          <el-radio-button label="HR">HR</el-radio-button>
+        </el-radio-group>
+      </div>
+
+      <el-form :model="form" label-position="top">
+        <el-form-item label="用户名">
+          <el-input v-model="form.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="验证码">
+          <el-input v-model="form.code" placeholder="请输入验证码">
+            <template #append>
+              <el-button @click="onSendRegisterCode">发送</el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+      </el-form>
+
+      <el-button type="primary" class="btn" @click="onRegister">注册</el-button>
+      <el-button class="btn" @click="goLogin">返回登录</el-button>
+    </el-card>
+  </div>
+</template>
+
+<script setup>
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { register, sendEmailCode } from '../api/auth'
+
+const router = useRouter()
+const form = reactive({ role: 'USER', username: '', password: '', email: '', code: '' })
+
+async function onSendRegisterCode() {
+  if (!form.email) {
+    ElMessage.warning('请先填写邮箱')
+    return
+  }
+  await sendEmailCode(form.email, 'REGISTER')
+  ElMessage.success('验证码已发送')
+}
+
+async function onRegister() {
+  await register(form)
+  ElMessage.success('注册成功，请登录')
+  router.push('/login')
+}
+
+function goLogin() {
+  router.push('/login')
+}
+</script>
+
+<style scoped>
+.wrap {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f5f7fa;
+}
+
+.card {
+  width: 420px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.desc {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 14px;
+}
+
+.role-switch {
+  margin-bottom: 12px;
+}
+
+.btn {
+  width: 100%;
+  margin-top: 10px;
+}
+</style>
