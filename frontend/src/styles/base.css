@@ -1,0 +1,15 @@
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f5f7fa;
+  color: #303133;
+}
