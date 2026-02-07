@@ -13,7 +13,9 @@
             <el-form-item label="验证码">
               <el-input v-model="emailForm.code" placeholder="请输入验证码">
                 <template #append>
-                  <el-button @click="onSendLoginCode">发送</el-button>
+                  <el-button :disabled="loginCooldown > 0" @click="onSendLoginCode">
+                    {{ loginCooldown > 0 ? `${loginCooldown}s` : '发送' }}
+                  </el-button>
                 </template>
               </el-input>
             </el-form-item>
@@ -38,7 +40,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onBeforeUnmount, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { loginByEmail, loginByPassword, sendEmailCode } from '../api/auth'
@@ -50,14 +52,35 @@ const loginType = ref('password')
 
 const emailForm = reactive({ email: '', code: '' })
 const pwdForm = reactive({ username: '', password: '' })
+const loginCooldown = ref(0)
+let loginTimer = null
+
+function startLoginCooldown() {
+  loginCooldown.value = 30
+  if (loginTimer) clearInterval(loginTimer)
+  loginTimer = setInterval(() => {
+    loginCooldown.value -= 1
+    if (loginCooldown.value <= 0) {
+      loginCooldown.value = 0
+      clearInterval(loginTimer)
+      loginTimer = null
+    }
+  }, 1000)
+}
 
 async function onSendLoginCode() {
   if (!emailForm.email) {
     ElMessage.warning('请先填写邮箱')
     return
   }
-  await sendEmailCode(emailForm.email, 'LOGIN')
-  ElMessage.success('验证码已发送')
+  if (loginCooldown.value > 0) return
+  try {
+    await sendEmailCode(emailForm.email, 'LOGIN')
+    ElMessage.success('验证码已发送')
+    startLoginCooldown()
+  } catch (e) {
+    return
+  }
 }
 
 async function onLogin() {
@@ -80,6 +103,10 @@ async function onLogin() {
 function goRegister() {
   router.push('/register')
 }
+
+onBeforeUnmount(() => {
+  if (loginTimer) clearInterval(loginTimer)
+})
 </script>
 
 <style scoped>

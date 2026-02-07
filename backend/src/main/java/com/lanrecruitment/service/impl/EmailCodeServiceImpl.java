@@ -12,9 +12,11 @@ import org.springframework.stereotype.Service;
 public class EmailCodeServiceImpl implements EmailCodeService {
 
     private static final long TTL_MILLIS = 5 * 60 * 1000L;
+    private static final long SEND_COOLDOWN_MILLIS = 30 * 1000L;
 
     private final EmailClient emailClient;
     private final Map<String, CodeEntry> cache = new ConcurrentHashMap<>();
+    private final Map<String, Long> sendCooldown = new ConcurrentHashMap<>();
 
     public EmailCodeServiceImpl(EmailClient emailClient) {
         this.emailClient = emailClient;
@@ -22,11 +24,24 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 
     @Override
     public void sendCode(String email, String purpose) {
+        String cooldownKey = key(email, purpose);
+        long now = System.currentTimeMillis();
+        Long nextAllowed = sendCooldown.get(cooldownKey);
+        if (nextAllowed != null && now < nextAllowed) {
+            long remainSeconds = (nextAllowed - now + 999) / 1000;
+            throw new BizException(429, "操作频繁，请" + remainSeconds + "秒后再试");
+        }
+        sendCooldown.put(cooldownKey, now + SEND_COOLDOWN_MILLIS);
+
         String code = random6Digits();
         cache.put(key(email, purpose), new CodeEntry(code, System.currentTimeMillis() + TTL_MILLIS));
         try {
-            emailClient.sendCode(email, code);
+            emailClient.sendCode(email, purpose, code);
+        } catch (BizException e) {
+            sendCooldown.remove(cooldownKey);
+            throw e;
         } catch (Exception e) {
+            sendCooldown.remove(cooldownKey);
             throw new BizException(500, "验证码发送失败");
         }
     }

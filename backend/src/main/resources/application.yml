@@ -25,3 +25,9 @@ sa-token:
   is-concurrent: true
   is-share: true
   token-style: uuid
+
+email:
+  host:
+  from:
+  password:
+  username:
