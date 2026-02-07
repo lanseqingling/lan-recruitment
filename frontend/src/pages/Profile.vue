@@ -2,6 +2,22 @@
   <el-card>
     <template #header>个人中心</template>
 
+    <div class="avatar-row">
+      <el-avatar :size="64" :src="avatarSrc">
+        {{ avatarFallback }}
+      </el-avatar>
+      <div class="avatar-meta">
+        <div class="avatar-name">{{ me ? me.username : '' }}</div>
+        <el-upload
+          :show-file-list="false"
+          :before-upload="beforeAvatarUpload"
+          :http-request="doUploadAvatar"
+        >
+          <el-button size="small" :loading="uploading">上传/更换头像</el-button>
+        </el-upload>
+      </div>
+    </div>
+
     <el-descriptions v-if="me" :column="1" border>
       <el-descriptions-item label="用户ID">{{ me.id }}</el-descriptions-item>
       <el-descriptions-item label="用户名">{{ me.username }}</el-descriptions-item>
@@ -35,25 +51,42 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getMe, getProfile, updateProfile, changePassword } from '../api/user'
+import { changePassword, getMe, getProfile, updateProfile, uploadAvatar } from '../api/user'
 
 const router = useRouter()
 const me = ref(null)
+const profile = ref(null)
+const uploading = ref(false)
 const profileForm = reactive({ realName: '', phone: '' })
 const pwdForm = reactive({ oldPassword: '', newPassword: '' })
 
+const avatarFallback = computed(() => {
+  const name = (me.value && me.value.username) || 'U'
+  return name.slice(0, 1)
+})
+
+const avatarSrc = computed(() => {
+  const p = profile.value
+  if (!p || !p.avatar) return ''
+  const a = p.avatar
+  if (a.startsWith('http://') || a.startsWith('https://')) return a
+  const base = import.meta.env.VITE_API_BASE_URL || ''
+  return base + a
+})
+
 async function load() {
   me.value = await getMe()
-  const profile = await getProfile()
-  profileForm.realName = profile.realName || ''
-  profileForm.phone = profile.phone || ''
+  profile.value = await getProfile()
+  profileForm.realName = profile.value.realName || ''
+  profileForm.phone = profile.value.phone || ''
 }
 
 async function saveProfile() {
   await updateProfile(profileForm.realName, profileForm.phone)
+  window.dispatchEvent(new Event('profile-changed'))
   ElMessage.success('资料已保存')
 }
 
@@ -65,8 +98,55 @@ async function savePassword() {
   router.push('/login')
 }
 
+function beforeAvatarUpload(file) {
+  const isImage = ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)
+  if (!isImage) {
+    ElMessage.error('仅支持 JPG/PNG 图片')
+    return false
+  }
+  const isLt2M = file.size / 1024 / 1024 <= 2
+  if (!isLt2M) {
+    ElMessage.error('头像大小不能超过 2MB')
+    return false
+  }
+  return true
+}
+
+async function doUploadAvatar(options) {
+  uploading.value = true
+  try {
+    const url = await uploadAvatar(options.file)
+    if (!profile.value) profile.value = {}
+    profile.value.avatar = url
+    window.dispatchEvent(new Event('profile-changed'))
+    ElMessage.success('头像已更新')
+    options.onSuccess(url)
+  } catch (e) {
+    options.onError(e)
+  } finally {
+    uploading.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
 <style scoped>
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.avatar-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.avatar-name {
+  font-weight: 600;
+  color: #303133;
+}
 </style>

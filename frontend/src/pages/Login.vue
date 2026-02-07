@@ -116,4 +116,8 @@ function goRegister() {
   width: 100%;
   margin-top: 10px;
 }
+
+.btn + .btn {
+  margin-left: 0;
+}
 </style>

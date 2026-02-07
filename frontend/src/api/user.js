@@ -15,3 +15,11 @@ export function updateProfile(realName, phone) {
 export function changePassword(oldPassword, newPassword) {
   return request.post('/api/common/user/password/change', { oldPassword, newPassword })
 }
+
+export function uploadAvatar(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post('/api/common/user/avatar/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
