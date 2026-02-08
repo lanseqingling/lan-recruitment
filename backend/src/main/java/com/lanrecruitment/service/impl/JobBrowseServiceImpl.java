@@ -60,7 +60,7 @@ public class JobBrowseServiceImpl implements JobBrowseService {
             }
             qw.in(Job::getId, jobIds);
         }
-        List<Job> list = jobMapper.selectList(qw.orderByDesc(Job::getId).last("limit 50"));
+        List<Job> list = jobMapper.selectList(qw.orderByDesc(Job::getCreatedAt).orderByDesc(Job::getId).last("limit 50"));
         List<JobCardVO> res = new ArrayList<>();
         for (Job j : list) {
             res.add(toCard(j, null));

@@ -34,30 +34,24 @@
     </div>
 
     <div class="right">
-      <el-card v-if="role === 'USER'" class="mb">
-        <template #header>推荐岗位</template>
-        <div v-if="recommendJobs.length === 0" class="empty">暂无推荐（请先创建简历并配置标签）</div>
-        <el-table v-else :data="recommendJobs" size="small" style="width: 100%; margin-top: 10px">
-          <el-table-column prop="jobName" label="岗位" min-width="160" />
-          <el-table-column prop="city" label="城市" width="90" />
-          <el-table-column prop="jobType" label="类型" width="90" />
-          <el-table-column prop="salaryRange" label="薪资" width="120" />
-          <el-table-column prop="matchScore" label="匹配度" width="90" />
-          <el-table-column label="操作" width="140">
-            <template #default="{ row }">
-              <el-button size="small" @click="openDetail(row)">详情</el-button>
-              <el-button size="small" type="primary" @click="onApply(row)">投递</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-card class="mb">
+        <el-tabs v-model="activeTab" class="job-tabs" @tab-change="onTabChange">
+          <el-tab-pane v-if="role === 'USER'" label="推荐职位" name="recommend" />
+          <el-tab-pane label="最新职位" name="latest" />
+        </el-tabs>
       </el-card>
 
-      <el-card v-for="job in jobs" :key="job.id" class="mb">
+      <div v-if="activeTab === 'recommend' && role === 'USER' && recommendJobs.length === 0" class="empty">
+        暂无推荐（请先创建简历并配置标签）
+      </div>
+
+      <el-card v-for="job in displayJobs" :key="job.id" class="mb">
         <div class="job-title">{{ job.jobName }}</div>
         <div class="job-meta">
           <span>城市：{{ job.city }}</span>
           <span>类型：{{ job.jobType }}</span>
           <span>薪资：{{ job.salaryRange }}</span>
+          <span v-if="job.matchScore != null">匹配度：{{ job.matchScore }}</span>
         </div>
         <div class="job-desc">{{ job.description }}</div>
         <div class="job-actions">
@@ -87,7 +81,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { listJobs, recommendJobs as fetchRecommendJobsApi } from '../api/job'
@@ -106,9 +100,15 @@ const tagOptions = ref([])
 const jobs = ref([])
 const recommendJobs = ref([])
 const resumes = ref([])
+const activeTab = ref(role.value === 'USER' ? 'recommend' : 'latest')
 
 const detailVisible = ref(false)
 const currentJob = ref(null)
+
+const displayJobs = computed(() => {
+  if (role.value === 'USER' && activeTab.value === 'recommend') return recommendJobs.value
+  return jobs.value
+})
 
 async function fetchPublicJobs() {
   loading.value = true
@@ -135,6 +135,7 @@ async function fetchRecommendJobs() {
 
 async function onSearch() {
   router.push({ path: '/home', query: { keyword: filters.keyword || '' } })
+  activeTab.value = 'latest'
   await fetchPublicJobs()
 }
 
@@ -147,6 +148,12 @@ async function onSearchTags(query) {
     tagOptions.value = []
   } finally {
     tagLoading.value = false
+  }
+}
+
+async function onTabChange(name) {
+  if (name === 'recommend' && role.value === 'USER' && recommendJobs.value.length === 0) {
+    await fetchRecommendJobs()
   }
 }
 
@@ -177,13 +184,16 @@ onMounted(async () => {
   filters.keyword = route.query.keyword || ''
   await onSearchTags('')
   await fetchPublicJobs()
-  await fetchRecommendJobs()
+  if (role.value === 'USER' && activeTab.value === 'recommend') {
+    await fetchRecommendJobs()
+  }
 })
 
 watch(
   () => route.query.keyword,
   async (val) => {
     filters.keyword = val || ''
+    activeTab.value = 'latest'
     await fetchPublicJobs()
   }
 )
@@ -208,6 +218,10 @@ watch(
   margin-bottom: 12px;
 }
 
+.job-tabs :deep(.el-tabs__header) {
+  margin: 0;
+}
+
 .job-title {
   font-weight: 600;
   margin-bottom: 8px;
@@ -219,6 +233,7 @@ watch(
   font-size: 12px;
   color: #606266;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .job-desc {
