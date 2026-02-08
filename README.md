@@ -2,9 +2,11 @@
 
 本仓库为 Monorepo 结构：
 
-- backend：后端（Java 8 + Spring Boot + MyBatis-Plus + Sa-Token + MySQL）
-- frontend：前端（Vue 3 + Vite + Element Plus + Axios）
-- docs：需求与规范文档
+- `/backend`：后端（Java 8 + Spring Boot + MyBatis-Plus + Sa-Token + MySQL）
+- `/frontend`：前端（Vue 3 + Vite + Element Plus + Axios）
+- `/scripts`：一键启动脚本
+- `/docs`：需求与规范文档
+
 
 ## 后端启动
 
@@ -13,6 +15,7 @@
 2. 配置 `/backend/src/main/resources/application-dev.yml` ：
 
 ```yaml
+# 配置数据库
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/lan_recruitment?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
@@ -20,6 +23,7 @@ spring:
     password: 123456 # 修改为你的密码
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+# 配置邮箱服务
 email:
   host: # 你的 SMTP 服务器地址
   from: # 你的发件人邮箱地址
@@ -55,8 +59,18 @@ npm i
 npm run dev
 ```
 
+## 一键启动（推荐）
+
+配置好前后端环境后，在项目根目录执行：
+
+```bash
+bash scripts/dev.sh
+```
+
 ## 内置账号
 
-- 管理员：admin / admin123456
-- 求职者：user1 / user123456
-- HR：hr1 / hr123456
+> 启动 SpringBoot 服务会自动注入帐号到数据库
+
+- 管理员：admin / 123456
+- 求职者：user / 123456
+- HR：hr / 123456

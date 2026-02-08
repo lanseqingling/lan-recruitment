@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS sys_user (
     UNIQUE KEY uk_email (email),
     KEY idx_role (role),
     KEY idx_audit_status (audit_status)
-    ) COMMENT='系统用户表';
+) COMMENT='系统用户表';
 
 CREATE TABLE IF NOT EXISTS tag (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '标签ID',
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS tag (
     status TINYINT DEFAULT 1 COMMENT '状态：1启用 0停用',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     UNIQUE KEY uk_tag_name_type (tag_name, tag_type)
-    ) COMMENT='系统统一标签库';
+) COMMENT='系统统一标签库';
 
 CREATE TABLE IF NOT EXISTS resume (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '简历ID',
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS resume (
     update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     KEY idx_user_id (user_id),
     KEY idx_user_default (user_id, is_default)
-    ) COMMENT='简历表';
+) COMMENT='简历表';
 
 CREATE TABLE IF NOT EXISTS resume_tag (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS resume_tag (
     KEY idx_resume_id (resume_id),
     KEY idx_tag_id (tag_id),
     UNIQUE KEY uk_resume_tag (resume_id, tag_id)
-    ) COMMENT='简历标签关联表';
+) COMMENT='简历标签关联表';
 
 CREATE TABLE IF NOT EXISTS job (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '岗位ID',
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS job (
     KEY idx_hr_id (hr_id),
     KEY idx_audit_status (audit_status),
     KEY idx_city_type (city, job_type)
-    ) COMMENT='招聘岗位表';
+) COMMENT='招聘岗位表';
 
 CREATE TABLE IF NOT EXISTS job_tag (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS job_tag (
     KEY idx_job_id (job_id),
     KEY idx_tag_id (tag_id),
     UNIQUE KEY uk_job_tag (job_id, tag_id)
-    ) COMMENT='岗位标签关联表';
+) COMMENT='岗位标签关联表';
 
 CREATE TABLE IF NOT EXISTS job_apply (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '投递ID',
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS job_apply (
     KEY idx_job_id (job_id),
     KEY idx_user_job (user_id, job_id),
     UNIQUE KEY uk_resume_job (resume_id, job_id)
-    ) COMMENT='岗位投递记录表';
+) COMMENT='岗位投递记录表';
 
 CREATE TABLE IF NOT EXISTS match_score (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS match_score (
     KEY idx_resume_score (resume_id, score),
     KEY idx_job_score (job_id, score),
     UNIQUE KEY uk_resume_job (resume_id, job_id)
-    ) COMMENT='简历与岗位匹配度结果表';
+) COMMENT='简历与岗位匹配度结果表';
 
 CREATE TABLE IF NOT EXISTS notice (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '公告ID',
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS notice (
     content TEXT NOT NULL COMMENT '公告内容',
     status TINYINT DEFAULT 1 COMMENT '状态：1发布 0下线',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间'
-    ) COMMENT='系统公告表';
+) COMMENT='系统公告表';
 
 CREATE TABLE IF NOT EXISTS login_log (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
@@ -130,4 +130,4 @@ CREATE TABLE IF NOT EXISTS login_log (
     ip VARCHAR(50) COMMENT '登录IP',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '登录时间',
     KEY idx_user_id (user_id)
-    ) COMMENT='用户登录日志表';
+) COMMENT='用户登录日志表';

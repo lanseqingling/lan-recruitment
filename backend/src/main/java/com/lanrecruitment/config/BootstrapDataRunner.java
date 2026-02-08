@@ -40,7 +40,7 @@ public class BootstrapDataRunner implements CommandLineRunner {
         LocalDateTime now = LocalDateTime.now();
         SysUser admin = new SysUser();
         admin.setUsername("admin");
-        admin.setPassword(PasswordUtil.hash("admin123456"));
+        admin.setPassword(PasswordUtil.hash("123456"));
         admin.setEmail("admin@lanrecruitment.local");
         admin.setRole("ADMIN");
         admin.setStatus(1);
@@ -53,12 +53,12 @@ public class BootstrapDataRunner implements CommandLineRunner {
     private void initDemoUsers() {
         LocalDateTime now = LocalDateTime.now();
 
-        SysUser userExists = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, "user1"));
+        SysUser userExists = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, "user"));
         if (userExists == null) {
             SysUser u = new SysUser();
-            u.setUsername("user1");
-            u.setPassword(PasswordUtil.hash("user123456"));
-            u.setEmail("user1@lanrecruitment.local");
+            u.setUsername("user");
+            u.setPassword(PasswordUtil.hash("123456"));
+            u.setEmail("user@lanrecruitment.local");
             u.setRole("USER");
             u.setStatus(1);
             u.setAuditStatus(1);
@@ -67,12 +67,12 @@ public class BootstrapDataRunner implements CommandLineRunner {
             sysUserMapper.insert(u);
         }
 
-        SysUser hrExists = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, "hr1"));
+        SysUser hrExists = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, "hr"));
         if (hrExists == null) {
             SysUser u = new SysUser();
-            u.setUsername("hr1");
-            u.setPassword(PasswordUtil.hash("hr123456"));
-            u.setEmail("hr1@lanrecruitment.local");
+            u.setUsername("hr");
+            u.setPassword(PasswordUtil.hash("123456"));
+            u.setEmail("hr@lanrecruitment.local");
             u.setRole("HR");
             u.setStatus(1);
             u.setAuditStatus(0);
@@ -83,7 +83,7 @@ public class BootstrapDataRunner implements CommandLineRunner {
     }
 
     private void initDefaultTags() {
-        Long cnt = tagMapper.selectCount(new LambdaQueryWrapper<Tag>());
+        Long cnt = tagMapper.selectCount(new LambdaQueryWrapper<>());
         if (cnt != null && cnt > 0) {
             return;
         }
