@@ -1,6 +1,7 @@
 package com.lanrecruitment.domain.vo;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class JobCardVO {
     private Long id;
@@ -10,6 +11,7 @@ public class JobCardVO {
     private String jobType;
     private String description;
     private BigDecimal matchScore;
+    private LocalDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -65,5 +67,13 @@ public class JobCardVO {
 
     public void setMatchScore(BigDecimal matchScore) {
         this.matchScore = matchScore;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

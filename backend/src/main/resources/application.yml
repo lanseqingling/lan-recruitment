@@ -31,3 +31,6 @@ email:
   from:
   password:
   username:
+
+storage:
+  base-dir: ${user.home}/lan-recruitment/uploads

@@ -205,7 +205,11 @@ function onAsideResizeEnd() {
 
 function formatNoticeTime(value) {
   if (!value) return ''
-  if (typeof value === 'string') return value
+  if (typeof value === 'string') {
+    const normalized = value.replace('T', ' ')
+    const withoutMs = normalized.split('.')[0]
+    return withoutMs.length >= 16 ? withoutMs.slice(0, 16) : withoutMs
+  }
   if (Array.isArray(value) && value.length >= 3) {
     const year = value[0]
     const month = value[1] || 1
@@ -214,13 +218,17 @@ function formatNoticeTime(value) {
     const minute = value[4] || 0
     const second = value[5] || 0
     try {
-      return new Date(year, month - 1, day, hour, minute, second).toLocaleString()
+      const d = new Date(year, month - 1, day, hour, minute, second)
+      const pad2 = (n) => String(n).padStart(2, '0')
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`
     } catch (e) {
       return ''
     }
   }
   try {
-    return new Date(value).toLocaleString()
+    const d = new Date(value)
+    const pad2 = (n) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`
   } catch (e) {
     return ''
   }

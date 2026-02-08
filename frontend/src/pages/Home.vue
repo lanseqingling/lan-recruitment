@@ -51,6 +51,7 @@
           <span>城市：{{ job.city }}</span>
           <span>类型：{{ job.jobType }}</span>
           <span>薪资：{{ job.salaryRange }}</span>
+          <span v-if="job.createdAt">发布时间：{{ formatDateTime(job.createdAt) }}</span>
           <span v-if="job.matchScore != null">匹配度：{{ job.matchScore }}</span>
         </div>
         <div class="job-desc">{{ job.description }}</div>
@@ -70,6 +71,7 @@
       <el-descriptions-item label="城市">{{ currentJob.city }}</el-descriptions-item>
       <el-descriptions-item label="类型">{{ currentJob.jobType }}</el-descriptions-item>
       <el-descriptions-item label="薪资">{{ currentJob.salaryRange }}</el-descriptions-item>
+      <el-descriptions-item v-if="currentJob.createdAt" label="发布时间">{{ formatDateTime(currentJob.createdAt) }}</el-descriptions-item>
       <el-descriptions-item v-if="currentJob.matchScore != null" label="匹配度">{{ currentJob.matchScore }}</el-descriptions-item>
       <el-descriptions-item label="描述">{{ currentJob.description }}</el-descriptions-item>
     </el-descriptions>
@@ -154,6 +156,31 @@ async function onSearchTags(query) {
 async function onTabChange(name) {
   if (name === 'recommend' && role.value === 'USER' && recommendJobs.value.length === 0) {
     await fetchRecommendJobs()
+  }
+}
+
+function formatDateTime(value) {
+  if (!value) return ''
+  if (typeof value === 'string') {
+    const normalized = value.replace('T', ' ')
+    const withoutMs = normalized.split('.')[0]
+    return withoutMs.length >= 16 ? withoutMs.slice(0, 16) : withoutMs
+  }
+  if (Array.isArray(value) && value.length >= 3) {
+    const year = value[0]
+    const month = value[1] || 1
+    const day = value[2] || 1
+    const hour = value[3] || 0
+    const minute = value[4] || 0
+    const pad2 = (n) => String(n).padStart(2, '0')
+    return `${year}-${pad2(month)}-${pad2(day)} ${pad2(hour)}:${pad2(minute)}`
+  }
+  try {
+    const d = new Date(value)
+    const pad2 = (n) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+  } catch (e) {
+    return ''
   }
 }
 
@@ -246,6 +273,7 @@ watch(
   display: flex;
   gap: 10px;
   align-items: center;
+  justify-content: flex-end;
 }
 
 .empty {

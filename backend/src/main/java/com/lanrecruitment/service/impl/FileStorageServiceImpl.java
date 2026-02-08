@@ -3,11 +3,14 @@ package com.lanrecruitment.service.impl;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.service.FileStorageService;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +19,12 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private static final long AVATAR_MAX_SIZE = 2 * 1024 * 1024L;
     private static final long RESUME_MAX_SIZE = 10 * 1024 * 1024L;
+
+    private final String storageBaseDir;
+
+    public FileStorageServiceImpl(@Value("${storage.base-dir:uploads}") String storageBaseDir) {
+        this.storageBaseDir = storageBaseDir;
+    }
 
     @Override
     public String storeAvatar(MultipartFile file) {
@@ -42,13 +51,15 @@ public class FileStorageServiceImpl implements FileStorageService {
         }
 
         String filename = UUID.randomUUID().toString().replace("-", "") + "." + ext;
-        Path dir = Paths.get("uploads", subDir);
+        Path dir = Paths.get(storageBaseDir).toAbsolutePath().normalize().resolve(subDir);
         Path target = dir.resolve(filename);
 
         try {
             Files.createDirectories(dir);
-            file.transferTo(target.toFile());
-        } catch (IOException e) {
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
             throw new BizException(500, "文件保存失败");
         }
 

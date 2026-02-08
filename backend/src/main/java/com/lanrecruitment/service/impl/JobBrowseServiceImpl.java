@@ -134,6 +134,7 @@ public class JobBrowseServiceImpl implements JobBrowseService {
         vo.setJobType(j.getJobType());
         vo.setDescription(j.getDescription());
         vo.setMatchScore(score);
+        vo.setCreatedAt(j.getCreatedAt());
         return vo;
     }
 
