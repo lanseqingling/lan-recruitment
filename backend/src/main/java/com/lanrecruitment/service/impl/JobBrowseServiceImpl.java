@@ -3,9 +3,11 @@ package com.lanrecruitment.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lanrecruitment.domain.entity.Job;
+import com.lanrecruitment.domain.entity.JobTag;
 import com.lanrecruitment.domain.entity.Resume;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.JobMapper;
+import com.lanrecruitment.mapper.JobTagMapper;
 import com.lanrecruitment.mapper.ResumeMapper;
 import com.lanrecruitment.service.JobBrowseService;
 import com.lanrecruitment.service.MatchService;
@@ -14,23 +16,26 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JobBrowseServiceImpl implements JobBrowseService {
 
     private final JobMapper jobMapper;
+    private final JobTagMapper jobTagMapper;
     private final ResumeMapper resumeMapper;
     private final MatchService matchService;
 
-    public JobBrowseServiceImpl(JobMapper jobMapper, ResumeMapper resumeMapper, MatchService matchService) {
+    public JobBrowseServiceImpl(JobMapper jobMapper, JobTagMapper jobTagMapper, ResumeMapper resumeMapper, MatchService matchService) {
         this.jobMapper = jobMapper;
+        this.jobTagMapper = jobTagMapper;
         this.resumeMapper = resumeMapper;
         this.matchService = matchService;
     }
 
     @Override
-    public List<JobCardVO> listPublic(String keyword, String city, String jobType) {
+    public List<JobCardVO> listPublic(String keyword, String city, String jobType, String tagIds) {
         LambdaQueryWrapper<Job> qw = new LambdaQueryWrapper<Job>()
                 .eq(Job::getStatus, 1)
                 .eq(Job::getAuditStatus, 1);
@@ -42,6 +47,18 @@ public class JobBrowseServiceImpl implements JobBrowseService {
         }
         if (jobType != null && !jobType.trim().isEmpty()) {
             qw.eq(Job::getJobType, jobType);
+        }
+        List<Long> tagIdList = parseIds(tagIds);
+        if (!tagIdList.isEmpty()) {
+            List<Long> jobIds = jobTagMapper.selectList(new LambdaQueryWrapper<JobTag>().in(JobTag::getTagId, tagIdList))
+                    .stream()
+                    .map(JobTag::getJobId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (jobIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            qw.in(Job::getId, jobIds);
         }
         List<Job> list = jobMapper.selectList(qw.orderByDesc(Job::getId).last("limit 50"));
         List<JobCardVO> res = new ArrayList<>();
@@ -119,5 +136,22 @@ public class JobBrowseServiceImpl implements JobBrowseService {
         vo.setMatchScore(score);
         return vo;
     }
-}
 
+    private List<Long> parseIds(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        String[] parts = raw.split(",");
+        List<Long> res = new ArrayList<>();
+        for (String p : parts) {
+            if (p == null) continue;
+            String s = p.trim();
+            if (s.isEmpty()) continue;
+            try {
+                res.add(Long.parseLong(s));
+            } catch (Exception ignored) {
+            }
+        }
+        return res;
+    }
+}

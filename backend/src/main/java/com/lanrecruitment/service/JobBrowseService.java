@@ -4,7 +4,7 @@ import com.lanrecruitment.domain.vo.JobCardVO;
 import java.util.List;
 
 public interface JobBrowseService {
-    List<JobCardVO> listPublic(String keyword, String city, String jobType);
+    List<JobCardVO> listPublic(String keyword, String city, String jobType, String tagIds);
 
     JobCardVO detail(Long jobId);
 

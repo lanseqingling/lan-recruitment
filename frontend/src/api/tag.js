@@ -4,6 +4,10 @@ export function listTags(tagType) {
   return request.get('/api/public/tag/list', { params: { tagType } })
 }
 
+export function searchTags(params) {
+  return request.get('/api/public/tag/search', { params })
+}
+
 export function adminListTags(params) {
   return request.get('/api/admin/tag/list', { params })
 }

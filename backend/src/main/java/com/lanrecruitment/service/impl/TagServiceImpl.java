@@ -30,6 +30,26 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
+    public List<Tag> searchPublic(String tagType, String keyword, Integer limit) {
+        int safeLimit = limit == null ? 20 : limit;
+        if (safeLimit <= 0) {
+            safeLimit = 20;
+        }
+        if (safeLimit > 50) {
+            safeLimit = 50;
+        }
+
+        LambdaQueryWrapper<Tag> qw = new LambdaQueryWrapper<Tag>().eq(Tag::getStatus, 1);
+        if (tagType != null && !tagType.trim().isEmpty()) {
+            qw.eq(Tag::getTagType, tagType);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            qw.like(Tag::getTagName, keyword.trim());
+        }
+        return tagMapper.selectList(qw.orderByDesc(Tag::getId).last("limit " + safeLimit));
+    }
+
+    @Override
     public List<Tag> listAdmin(String tagType, Integer status) {
         LambdaQueryWrapper<Tag> qw = new LambdaQueryWrapper<>();
         if (tagType != null && !tagType.trim().isEmpty()) {

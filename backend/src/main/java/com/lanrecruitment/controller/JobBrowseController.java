@@ -21,9 +21,10 @@ public class JobBrowseController {
     public Response<List<JobCardVO>> list(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "city", required = false) String city,
-            @RequestParam(value = "jobType", required = false) String jobType
+            @RequestParam(value = "jobType", required = false) String jobType,
+            @RequestParam(value = "tagIds", required = false) String tagIds
     ) {
-        return Response.ok(jobBrowseService.listPublic(keyword, city, jobType));
+        return Response.ok(jobBrowseService.listPublic(keyword, city, jobType, tagIds));
     }
 
     @GetMapping("/api/public/job/detail")
@@ -36,4 +37,3 @@ public class JobBrowseController {
         return Response.ok(jobBrowseService.recommend(resumeId));
     }
 }
-

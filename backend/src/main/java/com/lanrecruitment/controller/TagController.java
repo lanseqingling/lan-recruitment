@@ -29,6 +29,15 @@ public class TagController {
         return Response.ok(tagService.listPublic(tagType));
     }
 
+    @GetMapping("/api/public/tag/search")
+    public Response<List<Tag>> searchPublic(
+            @RequestParam(value = "tagType", required = false) String tagType,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "limit", required = false) Integer limit
+    ) {
+        return Response.ok(tagService.searchPublic(tagType, keyword, limit));
+    }
+
     @GetMapping("/api/admin/tag/list")
     public Response<List<Tag>> listAdmin(
             @RequestParam(value = "tagType", required = false) String tagType,
@@ -49,4 +58,3 @@ public class TagController {
         return Response.ok(null);
     }
 }
-

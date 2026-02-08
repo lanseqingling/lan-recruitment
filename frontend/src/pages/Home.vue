@@ -2,7 +2,7 @@
   <div class="home">
     <div class="left">
       <el-card>
-        <template #header>筛选条件</template>
+        <template #header>筛选岗位</template>
         <el-form label-position="top">
           <el-form-item label="关键词">
             <el-input v-model="filters.keyword" placeholder="岗位名称 / 技能" clearable />
@@ -12,6 +12,21 @@
           </el-form-item>
           <el-form-item label="岗位类型">
             <el-input v-model="filters.jobType" placeholder="如：后端开发" clearable />
+          </el-form-item>
+          <el-form-item label="标签">
+            <el-select
+              v-model="filters.tagIds"
+              multiple
+              filterable
+              remote
+              clearable
+              :remote-method="onSearchTags"
+              :loading="tagLoading"
+              placeholder="搜索并选择标签"
+              style="width: 100%"
+            >
+              <el-option v-for="t in tagOptions" :key="t.id" :label="t.tagName" :value="t.id" />
+            </el-select>
           </el-form-item>
           <el-button type="primary" style="width: 100%" :loading="loading" @click="onSearch">查询</el-button>
         </el-form>
@@ -77,13 +92,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { listJobs, recommendJobs as fetchRecommendJobsApi } from '../api/job'
 import { applyJob, listMyResumes } from '../api/resume'
+import { searchTags } from '../api/tag'
 
-const filters = reactive({ keyword: '', city: '', jobType: '' })
+const filters = reactive({ keyword: '', city: '', jobType: '', tagIds: [] })
 const route = useRoute()
 const router = useRouter()
 
 const role = ref(localStorage.getItem('role') || 'USER')
 const loading = ref(false)
+const tagLoading = ref(false)
+const tagOptions = ref([])
 
 const jobs = ref([])
 const recommendJobs = ref([])
@@ -98,7 +116,8 @@ async function fetchPublicJobs() {
     jobs.value = await listJobs({
       keyword: filters.keyword,
       city: filters.city,
-      jobType: filters.jobType
+      jobType: filters.jobType,
+      tagIds: Array.isArray(filters.tagIds) && filters.tagIds.length > 0 ? filters.tagIds.join(',') : undefined
     })
   } finally {
     loading.value = false
@@ -117,6 +136,18 @@ async function fetchRecommendJobs() {
 async function onSearch() {
   router.push({ path: '/home', query: { keyword: filters.keyword || '' } })
   await fetchPublicJobs()
+}
+
+async function onSearchTags(query) {
+  const q = (query || '').trim()
+  tagLoading.value = true
+  try {
+    tagOptions.value = await searchTags({ keyword: q, limit: 20 })
+  } catch (e) {
+    tagOptions.value = []
+  } finally {
+    tagLoading.value = false
+  }
 }
 
 function openDetail(job) {
@@ -144,6 +175,7 @@ async function onApply(job) {
 
 onMounted(async () => {
   filters.keyword = route.query.keyword || ''
+  await onSearchTags('')
   await fetchPublicJobs()
   await fetchRecommendJobs()
 })
