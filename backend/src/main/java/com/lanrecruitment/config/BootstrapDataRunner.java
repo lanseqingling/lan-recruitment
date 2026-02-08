@@ -1,6 +1,8 @@
 package com.lanrecruitment.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.lanrecruitment.common.enums.TagType;
+import com.lanrecruitment.common.enums.UserRole;
 import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.domain.entity.Tag;
 import com.lanrecruitment.mapper.SysUserMapper;
@@ -42,7 +44,7 @@ public class BootstrapDataRunner implements CommandLineRunner {
         admin.setUsername("admin");
         admin.setPassword(PasswordUtil.hash("123456"));
         admin.setEmail("admin@lanrecruitment.local");
-        admin.setRole("ADMIN");
+        admin.setRole(UserRole.ADMIN.name());
         admin.setStatus(1);
         admin.setAuditStatus(1);
         admin.setCreatedAt(now);
@@ -59,7 +61,7 @@ public class BootstrapDataRunner implements CommandLineRunner {
             u.setUsername("user");
             u.setPassword(PasswordUtil.hash("123456"));
             u.setEmail("user@lanrecruitment.local");
-            u.setRole("USER");
+            u.setRole(UserRole.USER.name());
             u.setStatus(1);
             u.setAuditStatus(1);
             u.setCreatedAt(now);
@@ -73,7 +75,7 @@ public class BootstrapDataRunner implements CommandLineRunner {
             u.setUsername("hr");
             u.setPassword(PasswordUtil.hash("123456"));
             u.setEmail("hr@lanrecruitment.local");
-            u.setRole("HR");
+            u.setRole(UserRole.HR.name());
             u.setStatus(1);
             u.setAuditStatus(0);
             u.setCreatedAt(now);
@@ -90,24 +92,24 @@ public class BootstrapDataRunner implements CommandLineRunner {
         LocalDateTime now = LocalDateTime.now();
         List<Tag> tags = new ArrayList<>();
 
-        tags.add(buildTag("Java", "SKILL", 3, now));
-        tags.add(buildTag("Spring Boot", "SKILL", 3, now));
-        tags.add(buildTag("MySQL", "SKILL", 3, now));
-        tags.add(buildTag("Vue 3", "SKILL", 3, now));
-        tags.add(buildTag("前端开发", "INDUSTRY", 1, now));
-        tags.add(buildTag("后端开发", "INDUSTRY", 1, now));
-        tags.add(buildTag("3年经验", "EXPERIENCE", 1, now));
-        tags.add(buildTag("应届生", "EXPERIENCE", 1, now));
+        tags.add(buildTag("Java", TagType.SKILL, 3, now));
+        tags.add(buildTag("Spring Boot", TagType.SKILL, 3, now));
+        tags.add(buildTag("MySQL", TagType.SKILL, 3, now));
+        tags.add(buildTag("Vue 3", TagType.SKILL, 3, now));
+        tags.add(buildTag("前端开发", TagType.INDUSTRY, 1, now));
+        tags.add(buildTag("后端开发", TagType.INDUSTRY, 1, now));
+        tags.add(buildTag("3年经验", TagType.EXPERIENCE, 1, now));
+        tags.add(buildTag("应届生", TagType.EXPERIENCE, 1, now));
 
         for (Tag tag : tags) {
             tagMapper.insert(tag);
         }
     }
 
-    private Tag buildTag(String name, String type, int baseWeight, LocalDateTime now) {
+    private Tag buildTag(String name, TagType type, int baseWeight, LocalDateTime now) {
         Tag t = new Tag();
         t.setTagName(name);
-        t.setTagType(type);
+        t.setTagType(type.name());
         t.setBaseWeight(baseWeight);
         t.setStatus(1);
         t.setCreatedAt(now);

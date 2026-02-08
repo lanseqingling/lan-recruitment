@@ -4,6 +4,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import com.lanrecruitment.common.enums.TagType;
 
 public class TagSaveDTO {
     private Long id;
@@ -12,7 +13,7 @@ public class TagSaveDTO {
     private String tagName;
 
     @NotBlank(message = "标签类型不能为空")
-    @Pattern(regexp = "SKILL|INDUSTRY|EXPERIENCE", message = "标签类型不合法")
+    @Pattern(regexp = TagType.REGEX, message = "标签类型不合法")
     private String tagType;
 
     @NotNull(message = "基础权重不能为空")

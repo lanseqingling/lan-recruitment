@@ -3,6 +3,7 @@ package com.lanrecruitment.domain.dto;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import com.lanrecruitment.common.enums.UserRole;
 
 public class RegisterDTO {
     @NotBlank(message = "用户名不能为空")
@@ -18,7 +19,7 @@ public class RegisterDTO {
     @NotBlank(message = "验证码不能为空")
     private String code;
 
-    @Pattern(regexp = "USER|HR", message = "角色只能为USER或HR")
+    @Pattern(regexp = UserRole.REGEX_REGISTER, message = "角色只能为USER或HR")
     private String role;
 
     public String getUsername() {

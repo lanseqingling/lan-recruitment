@@ -1,6 +1,7 @@
 package com.lanrecruitment.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.lanrecruitment.common.enums.UserRole;
 import com.lanrecruitment.domain.dto.AuditDecisionDTO;
 import com.lanrecruitment.domain.entity.Job;
 import com.lanrecruitment.domain.entity.SysUser;
@@ -29,7 +30,7 @@ public class AdminAuditServiceImpl implements AdminAuditService {
     @Override
     public List<AdminHrAuditVO> listPendingHr() {
         List<SysUser> list = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()
-                .eq(SysUser::getRole, "HR")
+                .eq(SysUser::getRole, UserRole.HR.name())
                 .eq(SysUser::getAuditStatus, 0)
                 .orderByDesc(SysUser::getId));
         List<AdminHrAuditVO> res = new ArrayList<>();
@@ -49,7 +50,7 @@ public class AdminAuditServiceImpl implements AdminAuditService {
     @Override
     public void auditHr(AuditDecisionDTO dto) {
         SysUser u = sysUserMapper.selectById(dto.getId());
-        if (u == null || !"HR".equals(u.getRole())) {
+        if (u == null || UserRole.from(u.getRole()) != UserRole.HR) {
             throw new BizException(404, "HR账号不存在");
         }
         u.setAuditStatus(dto.getPass() ? 1 : 2);

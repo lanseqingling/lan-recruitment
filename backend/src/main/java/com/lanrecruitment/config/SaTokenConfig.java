@@ -6,6 +6,7 @@ import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.context.SaHolder;
+import com.lanrecruitment.common.enums.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,15 +24,15 @@ public class SaTokenConfig {
                     }
                     SaRouter.match("/api/admin/**", r -> {
                         StpUtil.checkLogin();
-                        StpUtil.checkRole("ADMIN");
+                        StpUtil.checkRole(UserRole.ADMIN.name());
                     });
                     SaRouter.match("/api/hr/**", r -> {
                         StpUtil.checkLogin();
-                        StpUtil.checkRole("HR");
+                        StpUtil.checkRole(UserRole.HR.name());
                     });
                     SaRouter.match("/api/user/**", r -> {
                         StpUtil.checkLogin();
-                        StpUtil.checkRole("USER");
+                        StpUtil.checkRole(UserRole.USER.name());
                     });
                     SaRouter.match("/api/common/**", StpUtil::checkLogin);
                 })

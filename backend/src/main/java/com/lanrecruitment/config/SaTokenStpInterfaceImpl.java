@@ -1,6 +1,7 @@
 package com.lanrecruitment.config;
 
 import cn.dev33.satoken.stp.StpInterface;
+import com.lanrecruitment.common.enums.UserRole;
 import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.mapper.SysUserMapper;
 import java.util.Collections;
@@ -37,13 +38,13 @@ public class SaTokenStpInterfaceImpl implements StpInterface {
         if (u.getStatus() == null || u.getStatus() != 1) {
             return Collections.emptyList();
         }
-        if ("HR".equals(u.getRole()) && (u.getAuditStatus() == null || u.getAuditStatus() != 1)) {
+        UserRole role = UserRole.from(u.getRole());
+        if (role == null) {
             return Collections.emptyList();
         }
-        if (u.getRole() == null) {
+        if (role == UserRole.HR && (u.getAuditStatus() == null || u.getAuditStatus() != 1)) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(u.getRole());
+        return Collections.singletonList(role.name());
     }
 }
-

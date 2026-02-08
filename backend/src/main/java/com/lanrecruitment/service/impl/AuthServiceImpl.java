@@ -2,6 +2,8 @@ package com.lanrecruitment.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.lanrecruitment.common.enums.EmailPurpose;
+import com.lanrecruitment.common.enums.UserRole;
 import com.lanrecruitment.domain.dto.LoginByEmailDTO;
 import com.lanrecruitment.domain.dto.LoginByPasswordDTO;
 import com.lanrecruitment.domain.dto.RegisterDTO;
@@ -34,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
         if (user.getStatus() == null || user.getStatus() != 1) {
             throw new BizException(403, "账号已被禁用");
         }
-        if ("HR".equals(user.getRole()) && (user.getAuditStatus() == null || user.getAuditStatus() != 1)) {
+        if (UserRole.isHr(user.getRole()) && (user.getAuditStatus() == null || user.getAuditStatus() != 1)) {
             throw new BizException(403, "HR账号待审核");
         }
         if (!PasswordUtil.matches(dto.getPassword(), user.getPassword())) {
@@ -46,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String loginByEmail(LoginByEmailDTO dto) {
-        emailCodeService.verifyCode(dto.getEmail(), "LOGIN", dto.getCode());
+        emailCodeService.verifyCode(dto.getEmail(), EmailPurpose.LOGIN.name(), dto.getCode());
         SysUser user = sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getEmail, dto.getEmail()));
         if (user == null) {
             throw new BizException(400, "账号不存在");
@@ -54,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
         if (user.getStatus() == null || user.getStatus() != 1) {
             throw new BizException(403, "账号已被禁用");
         }
-        if ("HR".equals(user.getRole()) && (user.getAuditStatus() == null || user.getAuditStatus() != 1)) {
+        if (UserRole.isHr(user.getRole()) && (user.getAuditStatus() == null || user.getAuditStatus() != 1)) {
             throw new BizException(403, "HR账号待审核");
         }
         StpUtil.login(user.getId());
@@ -63,9 +65,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void register(RegisterDTO dto) {
-        emailCodeService.verifyCode(dto.getEmail(), "REGISTER", dto.getCode());
-        String role = dto.getRole() == null ? "USER" : dto.getRole();
-        if (!"USER".equals(role) && !"HR".equals(role)) {
+        emailCodeService.verifyCode(dto.getEmail(), EmailPurpose.REGISTER.name(), dto.getCode());
+        UserRole role = dto.getRole() == null ? UserRole.USER : UserRole.from(dto.getRole());
+        if (role == null || role == UserRole.ADMIN) {
             throw new BizException(400, "角色只能为USER或HR");
         }
         Long usernameCnt = sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, dto.getUsername()));
@@ -82,9 +84,9 @@ public class AuthServiceImpl implements AuthService {
         u.setUsername(dto.getUsername());
         u.setPassword(PasswordUtil.hash(dto.getPassword()));
         u.setEmail(dto.getEmail());
-        u.setRole(role);
+        u.setRole(role.name());
         u.setStatus(1);
-        u.setAuditStatus("HR".equals(role) ? 0 : 1);
+        u.setAuditStatus(role == UserRole.HR ? 0 : 1);
         u.setCreatedAt(now);
         u.setUpdatedAt(now);
         sysUserMapper.insert(u);

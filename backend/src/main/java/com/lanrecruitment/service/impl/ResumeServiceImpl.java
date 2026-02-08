@@ -3,6 +3,7 @@ package com.lanrecruitment.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.lanrecruitment.common.enums.TagType;
 import com.lanrecruitment.domain.dto.IdDTO;
 import com.lanrecruitment.domain.dto.ResumeSaveDTO;
 import com.lanrecruitment.domain.dto.ResumeTagItemDTO;
@@ -157,14 +158,14 @@ public class ResumeServiceImpl implements ResumeService {
             int base = t.getBaseWeight() == null ? 1 : t.getBaseWeight();
             int proficiency = item.getProficiency() == null ? 1 : item.getProficiency();
             int weight = base;
-            if ("SKILL".equals(t.getTagType())) {
+            if (TagType.isSkill(t.getTagType())) {
                 weight = base * proficiency;
             }
 
             ResumeTag rt = new ResumeTag();
             rt.setResumeId(r.getId());
             rt.setTagId(item.getTagId());
-            rt.setProficiency("SKILL".equals(t.getTagType()) ? proficiency : null);
+            rt.setProficiency(TagType.isSkill(t.getTagType()) ? proficiency : null);
             rt.setWeight(weight);
             resumeTagMapper.insert(rt);
         }

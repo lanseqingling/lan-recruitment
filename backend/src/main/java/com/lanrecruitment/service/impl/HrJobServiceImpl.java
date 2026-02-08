@@ -7,6 +7,7 @@ import com.lanrecruitment.domain.dto.IdDTO;
 import com.lanrecruitment.domain.dto.JobSaveDTO;
 import com.lanrecruitment.domain.dto.JobTagItemDTO;
 import com.lanrecruitment.domain.dto.JobTagSaveDTO;
+import com.lanrecruitment.common.enums.TagType;
 import com.lanrecruitment.domain.entity.Job;
 import com.lanrecruitment.domain.entity.JobApply;
 import com.lanrecruitment.domain.entity.JobTag;
@@ -169,14 +170,14 @@ public class HrJobServiceImpl implements HrJobService {
             int base = t.getBaseWeight() == null ? 1 : t.getBaseWeight();
             int proficiency = item.getProficiency() == null ? 1 : item.getProficiency();
             int weight = base;
-            if ("SKILL".equals(t.getTagType())) {
+            if (TagType.isSkill(t.getTagType())) {
                 weight = base * proficiency;
             }
 
             JobTag jt = new JobTag();
             jt.setJobId(job.getId());
             jt.setTagId(item.getTagId());
-            jt.setProficiency("SKILL".equals(t.getTagType()) ? proficiency : null);
+            jt.setProficiency(TagType.isSkill(t.getTagType()) ? proficiency : null);
             jt.setWeight(weight);
             jobTagMapper.insert(jt);
         }

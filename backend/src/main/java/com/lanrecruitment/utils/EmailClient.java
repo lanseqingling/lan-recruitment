@@ -1,6 +1,7 @@
 package com.lanrecruitment.utils;
 
 import com.lanrecruitment.config.EmailProperties;
+import com.lanrecruitment.common.enums.EmailPurpose;
 import com.lanrecruitment.exception.BizException;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -30,7 +31,7 @@ public class EmailClient {
             throw new BizException(500, "邮件服务未配置");
         }
 
-        String action = "REGISTER".equalsIgnoreCase(purpose) ? "注册" : "登录";
+        String action = EmailPurpose.from(purpose) == EmailPurpose.REGISTER ? "注册" : "登录";
         String subject = "智能招聘系统 - " + action + "验证码";
         String content = "您的" + action + "验证码为：" + code + "。有效期5分钟，请勿泄露。";
 
