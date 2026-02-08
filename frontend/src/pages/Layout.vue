@@ -10,6 +10,28 @@
       </div>
 
       <div class="header-right">
+        <el-popover
+          v-model:visible="noticePopoverVisible"
+          placement="bottom"
+          :width="360"
+          trigger="click"
+          @show="loadNotices"
+        >
+          <template #reference>
+            <div class="message-entry">消息</div>
+          </template>
+          <div class="notice-panel">
+            <div class="notice-panel-title">系统公告</div>
+            <div v-if="noticeLoading" class="notice-loading">加载中...</div>
+            <div v-else-if="latestNotices.length === 0" class="notice-empty">暂无公告</div>
+            <div v-else class="notice-list">
+              <div v-for="n in latestNotices" :key="n.id" class="notice-item" @click="openNotice(n)">
+                <div class="notice-item-title">{{ n.title }}</div>
+                <div class="notice-item-time">{{ formatNoticeTime(n.createdAt) }}</div>
+              </div>
+            </div>
+          </div>
+        </el-popover>
         <el-tag effect="plain">{{ roleText }}</el-tag>
         <el-dropdown trigger="click" @command="onUserCommand">
           <div class="user-entry">
@@ -30,14 +52,39 @@
     </el-header>
 
     <el-container>
-      <el-aside width="220px" class="aside">
-        <el-menu :default-active="activePath" @select="go">
-          <el-menu-item index="/home">首页</el-menu-item>
-          <el-menu-item v-if="role === 'USER'" index="/resume">简历管理</el-menu-item>
-          <el-menu-item v-if="role === 'HR'" index="/job">岗位管理</el-menu-item>
-          <el-menu-item v-if="role === 'ADMIN'" index="/audit">审核管理</el-menu-item>
-          <el-menu-item v-if="role === 'ADMIN'" index="/tag">标签库管理</el-menu-item>
-          <el-menu-item v-if="role === 'ADMIN'" index="/notice">公告管理</el-menu-item>
+      <el-aside :width="asideWidth" class="aside">
+        <div class="aside-top">
+          <el-button class="aside-toggle" text @click="toggleCollapse">
+            <el-icon v-if="collapsed"><Expand /></el-icon>
+            <el-icon v-else><Fold /></el-icon>
+          </el-button>
+        </div>
+        <div class="aside-resizer" @mousedown="onAsideResizeStart" />
+        <el-menu :default-active="activePath" :collapse="collapsed" :collapse-transition="false" @select="go">
+          <el-menu-item index="/home">
+            <el-icon><House /></el-icon>
+            <span>首页</span>
+          </el-menu-item>
+          <el-menu-item v-if="role === 'USER'" index="/resume">
+            <el-icon><Document /></el-icon>
+            <span>简历管理</span>
+          </el-menu-item>
+          <el-menu-item v-if="role === 'HR'" index="/job">
+            <el-icon><Briefcase /></el-icon>
+            <span>岗位管理</span>
+          </el-menu-item>
+          <el-menu-item v-if="role === 'ADMIN'" index="/audit">
+            <el-icon><CircleCheck /></el-icon>
+            <span>审核管理</span>
+          </el-menu-item>
+          <el-menu-item v-if="role === 'ADMIN'" index="/tag">
+            <el-icon><CollectionTag /></el-icon>
+            <span>标签库管理</span>
+          </el-menu-item>
+          <el-menu-item v-if="role === 'ADMIN'" index="/notice">
+            <el-icon><Bell /></el-icon>
+            <span>公告管理</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -46,13 +93,19 @@
       </el-main>
     </el-container>
   </el-container>
+
+  <el-dialog v-model="noticeDialogVisible" :title="currentNotice?.title || '公告'" width="520px">
+    <div class="notice-dialog-content">{{ currentNotice?.content || '' }}</div>
+  </el-dialog>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Bell, Briefcase, CircleCheck, CollectionTag, Document, Expand, Fold, House } from '@element-plus/icons-vue'
 import { logout } from '../api/auth'
+import { listNotices } from '../api/notice'
 import { getProfile } from '../api/user'
 
 const router = useRouter()
@@ -61,6 +114,18 @@ const route = useRoute()
 const keyword = ref('')
 const role = ref(localStorage.getItem('role') || 'USER')
 const profile = ref(null)
+const collapsed = ref(false)
+const asideExpandedWidth = ref(176)
+const asideResizing = ref(false)
+const asideResizeStartX = ref(0)
+const asideResizeStartWidth = ref(176)
+const noticePopoverVisible = ref(false)
+const noticeLoading = ref(false)
+const latestNotices = ref([])
+const noticeDialogVisible = ref(false)
+const currentNotice = ref(null)
+
+const asideWidth = computed(() => (collapsed.value ? '64px' : `${asideExpandedWidth.value}px`))
 
 const roleText = computed(() => {
   if (role.value === 'ADMIN') return '管理员'
@@ -109,6 +174,77 @@ function onUserCommand(cmd) {
   }
 }
 
+function toggleCollapse() {
+  collapsed.value = !collapsed.value
+}
+
+function onAsideResizeStart(e) {
+  if (collapsed.value) return
+  asideResizing.value = true
+  asideResizeStartX.value = e.clientX
+  asideResizeStartWidth.value = asideExpandedWidth.value
+  window.addEventListener('mousemove', onAsideResizing)
+  window.addEventListener('mouseup', onAsideResizeEnd)
+}
+
+function onAsideResizing(e) {
+  if (!asideResizing.value) return
+  const delta = e.clientX - asideResizeStartX.value
+  const next = asideResizeStartWidth.value + delta
+  const min = 140
+  const max = 280
+  asideExpandedWidth.value = Math.min(max, Math.max(min, Math.round(next)))
+}
+
+function onAsideResizeEnd() {
+  if (!asideResizing.value) return
+  asideResizing.value = false
+  window.removeEventListener('mousemove', onAsideResizing)
+  window.removeEventListener('mouseup', onAsideResizeEnd)
+}
+
+function formatNoticeTime(value) {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  if (Array.isArray(value) && value.length >= 3) {
+    const year = value[0]
+    const month = value[1] || 1
+    const day = value[2] || 1
+    const hour = value[3] || 0
+    const minute = value[4] || 0
+    const second = value[5] || 0
+    try {
+      return new Date(year, month - 1, day, hour, minute, second).toLocaleString()
+    } catch (e) {
+      return ''
+    }
+  }
+  try {
+    return new Date(value).toLocaleString()
+  } catch (e) {
+    return ''
+  }
+}
+
+async function loadNotices() {
+  if (noticeLoading.value) return
+  noticeLoading.value = true
+  try {
+    const list = await listNotices()
+    latestNotices.value = Array.isArray(list) ? list.slice(0, 5) : []
+  } catch (e) {
+    latestNotices.value = []
+  } finally {
+    noticeLoading.value = false
+  }
+}
+
+function openNotice(n) {
+  currentNotice.value = n || null
+  noticePopoverVisible.value = false
+  noticeDialogVisible.value = true
+}
+
 async function onLogout() {
   try {
     await logout()
@@ -139,6 +275,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('profile-changed', onProfileChanged)
+  onAsideResizeEnd()
 })
 </script>
 
@@ -156,14 +293,16 @@ onBeforeUnmount(() => {
 }
 
 .header-left {
-  width: 220px;
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
 }
 
 .logo {
   font-weight: 600;
   color: #0f4c81;
+  white-space: nowrap;
 }
 
 .header-center {
@@ -176,6 +315,71 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.message-entry {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  color: #303133;
+}
+
+.message-entry:hover {
+  background: #f5f7fa;
+}
+
+.notice-panel-title {
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 10px;
+}
+
+.notice-loading,
+.notice-empty {
+  color: #909399;
+  font-size: 13px;
+  padding: 10px 0;
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.notice-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.notice-item:hover {
+  background: #f5f7fa;
+}
+
+.notice-item-title {
+  font-size: 13px;
+  color: #303133;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice-item-time {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
+}
+
+.notice-dialog-content {
+  white-space: pre-wrap;
+  line-height: 1.6;
 }
 
 .user-entry {
@@ -208,6 +412,33 @@ onBeforeUnmount(() => {
 .aside {
   background: #ffffff;
   border-right: 1px solid #ebeef5;
+  position: relative;
+  transition: width 120ms ease;
+}
+
+.aside-top {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.aside-toggle {
+  height: 32px;
+  width: 32px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.aside-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
 }
 
 .main {

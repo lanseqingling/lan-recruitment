@@ -21,11 +21,6 @@
     <div class="right">
       <el-card v-if="role === 'USER'" class="mb">
         <template #header>推荐岗位</template>
-        <el-alert
-          type="info"
-          :closable="false"
-          title="推荐结果基于余弦相似度：简历标签向量 × 岗位标签向量，并按得分降序展示。"
-        />
         <div v-if="recommendJobs.length === 0" class="empty">暂无推荐（请先创建简历并配置标签）</div>
         <el-table v-else :data="recommendJobs" size="small" style="width: 100%; margin-top: 10px">
           <el-table-column prop="jobName" label="岗位" min-width="160" />

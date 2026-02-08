@@ -2,7 +2,6 @@
   <div class="wrap">
     <el-card class="card">
       <div class="title">智能招聘系统</div>
-      <div class="desc">毕业设计演示版（页面与接口骨架）</div>
 
       <el-tabs v-model="loginType" class="tabs" stretch>
         <el-tab-pane label="邮箱验证码登录" name="email">
