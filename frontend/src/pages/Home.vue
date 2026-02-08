@@ -1,7 +1,6 @@
 <template>
   <div class="home">
     <div class="left">
-      <div class="left-spacer" />
       <el-card>
         <template #header>筛选岗位</template>
         <el-form label-position="top">
@@ -342,6 +341,7 @@ onBeforeUnmount(() => {
 .home {
   display: flex;
   gap: 16px;
+  padding-top: 0px;
 }
 
 .left {
@@ -354,11 +354,6 @@ onBeforeUnmount(() => {
 .right {
   flex: 1;
   min-width: 0;
-}
-
-.left-spacer {
-  height: 40px;
-  margin-bottom: 0px;
 }
 
 .mb {
