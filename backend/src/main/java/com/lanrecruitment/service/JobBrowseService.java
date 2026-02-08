@@ -8,5 +8,5 @@ public interface JobBrowseService {
 
     JobCardVO detail(Long jobId);
 
-    List<JobCardVO> recommend(Long resumeId, Integer offset, Integer pageSize);
+    List<JobCardVO> recommend(Long resumeId, String keyword, String city, String jobType, String tagIds, Integer offset, Integer pageSize);
 }

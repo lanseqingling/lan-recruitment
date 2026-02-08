@@ -189,6 +189,10 @@ async function resetAndFetchRecommendJobs() {
 
 async function onSearch() {
   router.push({ path: '/home', query: { keyword: filters.keyword || '' } })
+  if (role.value === 'USER' && activeTab.value === 'recommend') {
+    await resetAndFetchRecommendJobs()
+    return
+  }
   await resetAndFetchPublicJobs()
 }
 
@@ -205,10 +209,10 @@ async function onSearchTags(query) {
 }
 
 async function onTabChange(name) {
-  if (name === 'recommend' && role.value === 'USER' && recommendJobs.value.length === 0) {
+  if (name === 'recommend' && role.value === 'USER') {
     await resetAndFetchRecommendJobs()
   }
-  if (name === 'latest' && jobs.value.length === 0) {
+  if (name === 'latest') {
     await resetAndFetchPublicJobs()
   }
 }
@@ -266,7 +270,15 @@ async function loadMoreRecommendJobs() {
   loadingMore.value = true
   try {
     const size = recommendOffset.value === 0 ? initialPageSize : pageSize
-    const list = await fetchRecommendJobsApi({ offset: recommendOffset.value, pageSize: size })
+    const params = {
+      keyword: filters.keyword || undefined,
+      city: filters.city || undefined,
+      jobType: filters.jobType || undefined,
+      tagIds: Array.isArray(filters.tagIds) && filters.tagIds.length > 0 ? filters.tagIds.join(',') : undefined,
+      offset: recommendOffset.value,
+      pageSize: size
+    }
+    const list = await fetchRecommendJobsApi(params)
     const batch = Array.isArray(list) ? list : []
     if (batch.length === 0) {
       recommendHasMore.value = false
@@ -325,6 +337,10 @@ watch(
   () => route.query.keyword,
   async (val) => {
     filters.keyword = val || ''
+    if (role.value === 'USER' && activeTab.value === 'recommend') {
+      await resetAndFetchRecommendJobs()
+      return
+    }
     await resetAndFetchPublicJobs()
   }
 )

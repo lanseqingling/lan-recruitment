@@ -37,9 +37,13 @@ public class JobBrowseController {
     @GetMapping("/api/user/job/recommend")
     public Response<List<JobCardVO>> recommend(
             @RequestParam(value = "resumeId", required = false) Long resumeId,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "city", required = false) String city,
+            @RequestParam(value = "jobType", required = false) String jobType,
+            @RequestParam(value = "tagIds", required = false) String tagIds,
             @RequestParam(value = "offset", required = false) Integer offset,
             @RequestParam(value = "pageSize", required = false) Integer pageSize
     ) {
-        return Response.ok(jobBrowseService.recommend(resumeId, offset, pageSize));
+        return Response.ok(jobBrowseService.recommend(resumeId, keyword, city, jobType, tagIds, offset, pageSize));
     }
 }

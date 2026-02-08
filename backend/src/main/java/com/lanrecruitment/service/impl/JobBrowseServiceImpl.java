@@ -84,22 +84,46 @@ public class JobBrowseServiceImpl implements JobBrowseService {
     }
 
     @Override
-    public List<JobCardVO> recommend(Long resumeId, Integer offset, Integer pageSize) {
+    public List<JobCardVO> recommend(Long resumeId, String keyword, String city, String jobType, String tagIds, Integer offset, Integer pageSize) {
         Long userId = StpUtil.getLoginIdAsLong();
         Resume resume = resolveResume(userId, resumeId);
 
-        List<Job> jobs = jobMapper.selectList(new LambdaQueryWrapper<Job>()
+        LambdaQueryWrapper<Job> qw = new LambdaQueryWrapper<Job>()
                 .eq(Job::getStatus, 1)
-                .eq(Job::getAuditStatus, 1)
-                .orderByDesc(Job::getId)
-                .last("limit 100"));
+                .eq(Job::getAuditStatus, 1);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            qw.and(w -> w.like(Job::getJobName, keyword).or().like(Job::getDescription, keyword));
+        }
+        if (city != null && !city.trim().isEmpty()) {
+            qw.eq(Job::getCity, city);
+        }
+        if (jobType != null && !jobType.trim().isEmpty()) {
+            qw.eq(Job::getJobType, jobType);
+        }
+        List<Long> tagIdList = parseIds(tagIds);
+        if (!tagIdList.isEmpty()) {
+            List<Long> jobIds = jobTagMapper.selectList(new LambdaQueryWrapper<JobTag>().in(JobTag::getTagId, tagIdList))
+                    .stream()
+                    .map(JobTag::getJobId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (jobIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            qw.in(Job::getId, jobIds);
+        }
+        int candidateLimit = 200;
+        List<Job> jobs = jobMapper.selectList(qw.orderByDesc(Job::getId).last("limit " + candidateLimit));
 
         List<JobCardVO> res = new ArrayList<>();
         for (Job j : jobs) {
             BigDecimal score = matchService.computeAndSave(resume.getId(), j.getId());
             res.add(toCard(j, score));
         }
-        res.sort(Comparator.comparing(JobCardVO::getMatchScore, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+        res.sort(Comparator
+                .comparing(JobCardVO::getMatchScore, Comparator.nullsLast(Comparator.naturalOrder()))
+                .reversed()
+                .thenComparing(Comparator.comparing(JobCardVO::getId, Comparator.nullsLast(Comparator.naturalOrder())).reversed()));
         int off = offset == null ? 0 : offset;
         if (off < 0) off = 0;
         int size = pageSize == null ? 10 : pageSize;
