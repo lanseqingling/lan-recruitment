@@ -22,9 +22,11 @@ public class JobBrowseController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "city", required = false) String city,
             @RequestParam(value = "jobType", required = false) String jobType,
-            @RequestParam(value = "tagIds", required = false) String tagIds
+            @RequestParam(value = "tagIds", required = false) String tagIds,
+            @RequestParam(value = "cursorId", required = false) Long cursorId,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize
     ) {
-        return Response.ok(jobBrowseService.listPublic(keyword, city, jobType, tagIds));
+        return Response.ok(jobBrowseService.listPublic(keyword, city, jobType, tagIds, cursorId, pageSize));
     }
 
     @GetMapping("/api/public/job/detail")
@@ -33,7 +35,11 @@ public class JobBrowseController {
     }
 
     @GetMapping("/api/user/job/recommend")
-    public Response<List<JobCardVO>> recommend(@RequestParam(value = "resumeId", required = false) Long resumeId) {
-        return Response.ok(jobBrowseService.recommend(resumeId));
+    public Response<List<JobCardVO>> recommend(
+            @RequestParam(value = "resumeId", required = false) Long resumeId,
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize
+    ) {
+        return Response.ok(jobBrowseService.recommend(resumeId, offset, pageSize));
     }
 }

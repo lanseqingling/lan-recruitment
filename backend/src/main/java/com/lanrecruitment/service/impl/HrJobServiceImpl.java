@@ -12,6 +12,7 @@ import com.lanrecruitment.domain.entity.JobApply;
 import com.lanrecruitment.domain.entity.JobTag;
 import com.lanrecruitment.domain.entity.Resume;
 import com.lanrecruitment.domain.entity.ResumeTag;
+import com.lanrecruitment.domain.entity.SysUser;
 import com.lanrecruitment.domain.entity.Tag;
 import com.lanrecruitment.domain.vo.ResumeTagVO;
 import com.lanrecruitment.exception.BizException;
@@ -20,6 +21,7 @@ import com.lanrecruitment.mapper.JobMapper;
 import com.lanrecruitment.mapper.JobTagMapper;
 import com.lanrecruitment.mapper.ResumeMapper;
 import com.lanrecruitment.mapper.ResumeTagMapper;
+import com.lanrecruitment.mapper.SysUserMapper;
 import com.lanrecruitment.mapper.TagMapper;
 import com.lanrecruitment.service.HrJobService;
 import com.lanrecruitment.service.MatchService;
@@ -45,6 +47,7 @@ public class HrJobServiceImpl implements HrJobService {
     private final JobApplyMapper jobApplyMapper;
     private final ResumeMapper resumeMapper;
     private final ResumeTagMapper resumeTagMapper;
+    private final SysUserMapper sysUserMapper;
     private final TagMapper tagMapper;
     private final MatchService matchService;
 
@@ -54,6 +57,7 @@ public class HrJobServiceImpl implements HrJobService {
             JobApplyMapper jobApplyMapper,
             ResumeMapper resumeMapper,
             ResumeTagMapper resumeTagMapper,
+            SysUserMapper sysUserMapper,
             TagMapper tagMapper,
             MatchService matchService
     ) {
@@ -62,6 +66,7 @@ public class HrJobServiceImpl implements HrJobService {
         this.jobApplyMapper = jobApplyMapper;
         this.resumeMapper = resumeMapper;
         this.resumeTagMapper = resumeTagMapper;
+        this.sysUserMapper = sysUserMapper;
         this.tagMapper = tagMapper;
         this.matchService = matchService;
     }
@@ -77,6 +82,7 @@ public class HrJobServiceImpl implements HrJobService {
             HrJobVO vo = new HrJobVO();
             vo.setId(j.getId());
             vo.setJobName(j.getJobName());
+            vo.setCompanyName(j.getCompanyName());
             vo.setCity(j.getCity());
             vo.setSalaryRange(j.getSalaryRange());
             vo.setJobType(j.getJobType());
@@ -92,11 +98,17 @@ public class HrJobServiceImpl implements HrJobService {
     public void save(JobSaveDTO dto) {
         Long hrId = StpUtil.getLoginIdAsLong();
         LocalDateTime now = LocalDateTime.now();
+        SysUser hr = sysUserMapper.selectById(hrId);
+        String companyName = hr == null ? null : hr.getCompanyName();
+        if (companyName == null || companyName.trim().isEmpty()) {
+            throw new BizException(400, "请先在个人中心完善公司名称");
+        }
 
         if (dto.getId() == null) {
             Job j = new Job();
             j.setHrId(hrId);
             j.setJobName(dto.getJobName());
+            j.setCompanyName(companyName.trim());
             j.setCity(dto.getCity());
             j.setSalaryRange(dto.getSalaryRange());
             j.setJobType(dto.getJobType());
@@ -111,6 +123,7 @@ public class HrJobServiceImpl implements HrJobService {
 
         Job exists = getMyJob(dto.getId());
         exists.setJobName(dto.getJobName());
+        exists.setCompanyName(companyName.trim());
         exists.setCity(dto.getCity());
         exists.setSalaryRange(dto.getSalaryRange());
         exists.setJobType(dto.getJobType());
@@ -271,6 +284,9 @@ public class HrJobServiceImpl implements HrJobService {
         Integer s = dto.getStatus();
         if (s == null || s < 0 || s > 3) {
             throw new BizException(400, "状态不合法");
+        }
+        if (s == 1) {
+            throw new BizException(400, "不支持已查看状态");
         }
         apply.setStatus(s);
         jobApplyMapper.updateById(apply);

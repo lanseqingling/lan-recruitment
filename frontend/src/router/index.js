@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import request from '../api/request'
 import Layout from '../pages/Layout.vue'
 import Login from '../pages/Login.vue'
 import Register from '../pages/Register.vue'
@@ -36,12 +37,27 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to) => {
+let lastAuthCheckAt = 0
+const AUTH_CHECK_TTL_MS = 10 * 1000
+
+router.beforeEach(async (to) => {
   const publicPaths = ['/login', '/register']
   if (publicPaths.includes(to.path)) return true
 
   const token = localStorage.getItem('token')
   if (!token) return '/login'
+
+  const now = Date.now()
+  if (now - lastAuthCheckAt > AUTH_CHECK_TTL_MS) {
+    try {
+      await request.get('/api/common/user/me')
+      lastAuthCheckAt = now
+    } catch (e) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('role')
+      return '/login'
+    }
+  }
 
   const role = localStorage.getItem('role')
   if (to.path === '/resume' && role !== 'USER') return '/home'

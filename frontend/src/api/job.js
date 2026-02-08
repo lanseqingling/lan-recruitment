@@ -9,6 +9,9 @@ export function getJobDetail(id) {
 }
 
 export function recommendJobs(resumeId) {
+  if (typeof resumeId === 'object' && resumeId !== null) {
+    return request.get('/api/user/job/recommend', { params: resumeId })
+  }
   return request.get('/api/user/job/recommend', { params: { resumeId } })
 }
 

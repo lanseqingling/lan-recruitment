@@ -163,6 +163,7 @@ public class ApplyServiceImpl implements ApplyService {
         JobCardVO vo = new JobCardVO();
         vo.setId(j.getId());
         vo.setJobName(j.getJobName());
+        vo.setCompanyName(j.getCompanyName());
         vo.setCity(j.getCity());
         vo.setSalaryRange(j.getSalaryRange());
         vo.setJobType(j.getJobType());

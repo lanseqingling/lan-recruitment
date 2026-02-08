@@ -1,15 +1,20 @@
 package com.lanrecruitment.domain.vo;
 
+import java.time.LocalDate;
+
 public class UserProfileVO {
     private Long id;
     private String username;
     private String email;
     private String role;
+    private String companyName;
     private String avatar;
     private Integer status;
     private Integer auditStatus;
     private String realName;
     private String phone;
+    private String school;
+    private LocalDate graduateDate;
 
     public Long getId() {
         return id;
@@ -41,6 +46,14 @@ public class UserProfileVO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
     public String getAvatar() {
@@ -81,5 +94,21 @@ public class UserProfileVO {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
+    }
+
+    public LocalDate getGraduateDate() {
+        return graduateDate;
+    }
+
+    public void setGraduateDate(LocalDate graduateDate) {
+        this.graduateDate = graduateDate;
     }
 }

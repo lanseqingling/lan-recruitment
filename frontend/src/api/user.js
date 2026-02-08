@@ -8,8 +8,8 @@ export function getProfile() {
   return request.get('/api/common/user/profile')
 }
 
-export function updateProfile(realName, phone) {
-  return request.post('/api/common/user/profile/update', { realName, phone })
+export function updateProfile(profile) {
+  return request.post('/api/common/user/profile/update', profile)
 }
 
 export function changePassword(oldPassword, newPassword) {

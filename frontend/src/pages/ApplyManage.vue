@@ -6,7 +6,6 @@
         <div class="filters">
           <el-select v-model="filterStatus" size="small" clearable placeholder="状态" style="width: 120px">
             <el-option label="已投递" :value="0" />
-            <el-option label="已查看" :value="1" />
             <el-option label="通过" :value="2" />
             <el-option label="拒绝" :value="3" />
           </el-select>
@@ -38,11 +37,17 @@
           </div>
         </div>
 
-        <el-steps :active="stepActive(a.applyStatus)" simple class="steps">
-          <el-step title="已投递" />
-          <el-step title="HR已查看" />
-          <el-step :title="finalStepTitle(a.applyStatus)" />
-        </el-steps>
+        <div class="progress">
+          <div class="progress-item is-active">
+            <div class="dot" />
+            <div class="label">已投递</div>
+          </div>
+          <div class="line" :class="{ done: isResultDone(a.applyStatus) }" />
+          <div class="progress-item" :class="{ 'is-active': isResultDone(a.applyStatus), pass: a.applyStatus === 2, reject: a.applyStatus === 3 }">
+            <div class="dot" />
+            <div class="label">{{ resultText(a.applyStatus) }}</div>
+          </div>
+        </div>
 
         <div class="resume-row">
           <div class="resume-info">
@@ -72,6 +77,8 @@
           </div>
         </div>
 
+        <div v-if="a.resume?.workDesc" class="resume-preview">{{ a.resume.workDesc }}</div>
+
         <div class="card-actions">
           <el-button size="small" @click="openJob(a.job)">查看岗位</el-button>
           <el-button size="small" @click="openResume(a.resume)">查看简历</el-button>
@@ -80,9 +87,10 @@
     </div>
   </el-card>
 
-  <el-dialog v-model="jobVisible" title="岗位详情" width="520px">
+  <el-dialog v-model="jobVisible" title="岗位详情" width="780px">
     <el-descriptions v-if="currentJob" :column="1" border>
       <el-descriptions-item label="岗位名称">{{ currentJob.jobName }}</el-descriptions-item>
+      <el-descriptions-item v-if="currentJob.companyName" label="公司名称">{{ currentJob.companyName }}</el-descriptions-item>
       <el-descriptions-item label="城市">{{ currentJob.city }}</el-descriptions-item>
       <el-descriptions-item label="类型">{{ currentJob.jobType }}</el-descriptions-item>
       <el-descriptions-item label="薪资">{{ currentJob.salaryRange }}</el-descriptions-item>
@@ -94,7 +102,7 @@
     </template>
   </el-dialog>
 
-  <el-dialog v-model="resumeVisible" title="简历详情" width="560px">
+  <el-dialog v-model="resumeVisible" title="简历详情" width="840px">
     <el-descriptions v-if="currentResume" :column="1" border>
       <el-descriptions-item label="简历名称">{{ currentResume.resumeName }}</el-descriptions-item>
       <el-descriptions-item label="姓名">{{ currentResume.realName }}</el-descriptions-item>
@@ -148,28 +156,25 @@ const filteredApplies = computed(() => {
 })
 
 function statusText(status) {
-  if (status === 1) return '已查看'
   if (status === 2) return '通过'
   if (status === 3) return '拒绝'
   return '已投递'
 }
 
 function statusType(status) {
-  if (status === 1) return 'warning'
   if (status === 2) return 'success'
   if (status === 3) return 'danger'
   return 'info'
 }
 
-function stepActive(status) {
-  if (status === 1) return 2
-  if (status === 2 || status === 3) return 3
-  return 1
+function isResultDone(status) {
+  return status === 2 || status === 3
 }
 
-function finalStepTitle(status) {
-  if (status === 3) return '已拒绝'
-  return '结果'
+function resultText(status) {
+  if (status === 2) return '通过'
+  if (status === 3) return '拒绝'
+  return '待处理'
 }
 
 function canChangeResume(a) {
@@ -315,8 +320,55 @@ onMounted(load)
   flex: 0 0 auto;
 }
 
-.steps {
+.progress {
   margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #909399;
+  flex: 0 0 auto;
+}
+
+.progress-item.is-active {
+  color: #303133;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c0c4cc;
+}
+
+.progress-item.is-active .dot {
+  background: #409eff;
+}
+
+.progress-item.pass.is-active .dot {
+  background: #67c23a;
+}
+
+.progress-item.reject.is-active .dot {
+  background: #f56c6c;
+}
+
+.line {
+  flex: 0 0 40%;
+  height: 1px;
+  background: #e4e7ed;
+  min-width: 120px;
+  max-width: 260px;
+}
+
+.line.done {
+  background: #409eff;
 }
 
 .resume-row {
@@ -338,6 +390,17 @@ onMounted(load)
   gap: 8px;
 }
 
+.resume-preview {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .card-actions {
   margin-top: 12px;
   display: flex;
@@ -351,4 +414,3 @@ onMounted(load)
   padding: 18px 0;
 }
 </style>
-

@@ -12,4 +12,15 @@ body {
   margin: 0;
   background: #f5f7fa;
   color: #303133;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#app {
+  overflow: hidden;
 }

@@ -51,7 +51,7 @@
       </div>
     </el-header>
 
-    <el-container>
+    <el-container class="body">
       <el-aside :width="asideWidth" class="aside">
         <div class="aside-top">
           <el-button class="aside-toggle" text @click="toggleCollapse">
@@ -293,7 +293,13 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .page {
-  height: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
 }
 
 .header {
@@ -302,6 +308,7 @@ onBeforeUnmount(() => {
   gap: 16px;
   background: #ffffff;
   border-bottom: 1px solid #ebeef5;
+  flex: 0 0 auto;
 }
 
 .header-left {
@@ -426,6 +433,9 @@ onBeforeUnmount(() => {
   border-right: 1px solid #ebeef5;
   position: relative;
   transition: width 120ms ease;
+  overflow: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
 }
 
 .aside-top {
@@ -455,5 +465,8 @@ onBeforeUnmount(() => {
 
 .main {
   background: #f5f7fa;
+  overflow: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
 }
 </style>

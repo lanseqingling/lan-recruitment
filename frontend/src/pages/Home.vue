@@ -1,6 +1,7 @@
 <template>
   <div class="home">
     <div class="left">
+      <div class="left-spacer" />
       <el-card>
         <template #header>筛选岗位</template>
         <el-form label-position="top">
@@ -34,20 +35,15 @@
     </div>
 
     <div class="right">
-      <el-card class="mb">
-        <el-tabs v-model="activeTab" class="job-tabs" @tab-change="onTabChange">
-          <el-tab-pane v-if="role === 'USER'" label="推荐职位" name="recommend" />
-          <el-tab-pane label="最新职位" name="latest" />
-        </el-tabs>
-      </el-card>
-
-      <div v-if="activeTab === 'recommend' && role === 'USER' && recommendJobs.length === 0" class="empty">
-        暂无推荐（请先创建简历并配置标签）
-      </div>
+      <el-tabs v-model="activeTab" class="job-tabs" @tab-change="onTabChange">
+        <el-tab-pane v-if="role === 'USER'" label="推荐岗位" name="recommend" />
+        <el-tab-pane label="最新岗位" name="latest" />
+      </el-tabs>
 
       <el-card v-for="job in displayJobs" :key="job.id" class="mb">
         <div class="job-title">{{ job.jobName }}</div>
         <div class="job-meta">
+          <span v-if="job.companyName">公司：{{ job.companyName }}</span>
           <span>城市：{{ job.city }}</span>
           <span>类型：{{ job.jobType }}</span>
           <span>薪资：{{ job.salaryRange }}</span>
@@ -60,14 +56,17 @@
           <el-button v-if="role === 'USER'" size="small" type="primary" @click="onApply(job)">投递简历</el-button>
         </div>
       </el-card>
-
-      <el-button style="width: 100%" :disabled="loading">加载更多</el-button>
+      <div ref="loadMoreRef" class="load-more-trigger">
+        <span v-if="loadingMore">加载中...</span>
+        <span v-else-if="!hasMore">没有更多了</span>
+      </div>
     </div>
   </div>
 
-  <el-dialog v-model="detailVisible" title="岗位详情" width="520px">
+  <el-dialog v-model="detailVisible" title="岗位详情" width="780px">
     <el-descriptions v-if="currentJob" :column="1" border>
       <el-descriptions-item label="岗位名称">{{ currentJob.jobName }}</el-descriptions-item>
+      <el-descriptions-item v-if="currentJob.companyName" label="公司名称">{{ currentJob.companyName }}</el-descriptions-item>
       <el-descriptions-item label="城市">{{ currentJob.city }}</el-descriptions-item>
       <el-descriptions-item label="类型">{{ currentJob.jobType }}</el-descriptions-item>
       <el-descriptions-item label="薪资">{{ currentJob.salaryRange }}</el-descriptions-item>
@@ -83,7 +82,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { listJobs, recommendJobs as fetchRecommendJobsApi } from '../api/job'
@@ -107,38 +106,91 @@ const activeTab = ref(role.value === 'USER' ? 'recommend' : 'latest')
 const detailVisible = ref(false)
 const currentJob = ref(null)
 
+const initialPageSize = 10
+const pageSize = 10
+const loadingMore = ref(false)
+const publicHasMore = ref(true)
+const recommendHasMore = ref(true)
+const publicCursorId = ref(null)
+const recommendOffset = ref(0)
+const loadMoreRef = ref(null)
+let observer = null
+const scrollRoot = ref(null)
+const prefetchCount = ref(0)
+
 const displayJobs = computed(() => {
   if (role.value === 'USER' && activeTab.value === 'recommend') return recommendJobs.value
   return jobs.value
 })
 
-async function fetchPublicJobs() {
+const hasMore = computed(() => {
+  if (role.value === 'USER' && activeTab.value === 'recommend') return recommendHasMore.value
+  return publicHasMore.value
+})
+
+function buildPublicParams() {
+  return {
+    keyword: filters.keyword,
+    city: filters.city,
+    jobType: filters.jobType,
+    tagIds: Array.isArray(filters.tagIds) && filters.tagIds.length > 0 ? filters.tagIds.join(',') : undefined,
+    cursorId: publicCursorId.value,
+    pageSize: publicCursorId.value == null ? initialPageSize : pageSize
+  }
+}
+
+async function resetAndFetchPublicJobs() {
   loading.value = true
+  jobs.value = []
+  publicCursorId.value = null
+  publicHasMore.value = true
+  prefetchCount.value = 0
   try {
-    jobs.value = await listJobs({
-      keyword: filters.keyword,
-      city: filters.city,
-      jobType: filters.jobType,
-      tagIds: Array.isArray(filters.tagIds) && filters.tagIds.length > 0 ? filters.tagIds.join(',') : undefined
-    })
+    await loadMore()
   } finally {
     loading.value = false
   }
 }
 
-async function fetchRecommendJobs() {
-  if (role.value !== 'USER') return
+async function loadMorePublicJobs() {
+  if (!publicHasMore.value || loadingMore.value) return
+  loadingMore.value = true
   try {
-    recommendJobs.value = await fetchRecommendJobsApi()
+    const list = await listJobs(buildPublicParams())
+    const batch = Array.isArray(list) ? list : []
+    if (batch.length === 0) {
+      publicHasMore.value = false
+      return
+    }
+    jobs.value = jobs.value.concat(batch)
+    publicCursorId.value = batch[batch.length - 1].id
+    if (batch.length < pageSize) {
+      publicHasMore.value = false
+    }
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+async function resetAndFetchRecommendJobs() {
+  if (role.value !== 'USER') return
+  loading.value = true
+  recommendJobs.value = []
+  recommendOffset.value = 0
+  recommendHasMore.value = true
+  prefetchCount.value = 0
+  try {
+    await loadMore()
   } catch (e) {
     recommendJobs.value = []
+  } finally {
+    loading.value = false
   }
 }
 
 async function onSearch() {
   router.push({ path: '/home', query: { keyword: filters.keyword || '' } })
-  activeTab.value = 'latest'
-  await fetchPublicJobs()
+  await resetAndFetchPublicJobs()
 }
 
 async function onSearchTags(query) {
@@ -155,7 +207,10 @@ async function onSearchTags(query) {
 
 async function onTabChange(name) {
   if (name === 'recommend' && role.value === 'USER' && recommendJobs.value.length === 0) {
-    await fetchRecommendJobs()
+    await resetAndFetchRecommendJobs()
+  }
+  if (name === 'latest' && jobs.value.length === 0) {
+    await resetAndFetchPublicJobs()
   }
 }
 
@@ -207,12 +262,63 @@ async function onApply(job) {
   ElMessage.success('已投递')
 }
 
+async function loadMoreRecommendJobs() {
+  if (!recommendHasMore.value || loadingMore.value) return
+  loadingMore.value = true
+  try {
+    const size = recommendOffset.value === 0 ? initialPageSize : pageSize
+    const list = await fetchRecommendJobsApi({ offset: recommendOffset.value, pageSize: size })
+    const batch = Array.isArray(list) ? list : []
+    if (batch.length === 0) {
+      recommendHasMore.value = false
+      return
+    }
+    recommendJobs.value = recommendJobs.value.concat(batch)
+    recommendOffset.value = recommendOffset.value + batch.length
+    if (batch.length < size) {
+      recommendHasMore.value = false
+    }
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+async function loadMore() {
+  if (role.value === 'USER' && activeTab.value === 'recommend') {
+    await loadMoreRecommendJobs()
+    return
+  }
+  await loadMorePublicJobs()
+}
+
 onMounted(async () => {
   filters.keyword = route.query.keyword || ''
   await onSearchTags('')
-  await fetchPublicJobs()
   if (role.value === 'USER' && activeTab.value === 'recommend') {
-    await fetchRecommendJobs()
+    await resetAndFetchRecommendJobs()
+  } else {
+    await resetAndFetchPublicJobs()
+  }
+
+  scrollRoot.value = document.querySelector('.main')
+  observer = new IntersectionObserver(
+    (entries) => {
+      const hit = entries.some((e) => e.isIntersecting)
+      if (!hit) return
+      const top = scrollRoot.value ? scrollRoot.value.scrollTop : 0
+      if (!top) {
+        const rootEl = scrollRoot.value
+        const shouldFill = !!rootEl && rootEl.scrollHeight <= rootEl.clientHeight + 1
+        if (!shouldFill && prefetchCount.value >= 1) return
+        if (prefetchCount.value >= 3) return
+        prefetchCount.value = prefetchCount.value + 1
+      }
+      loadMore()
+    },
+    { root: scrollRoot.value || null, rootMargin: '200px' }
+  )
+  if (loadMoreRef.value) {
+    observer.observe(loadMoreRef.value)
   }
 })
 
@@ -220,10 +326,16 @@ watch(
   () => route.query.keyword,
   async (val) => {
     filters.keyword = val || ''
-    activeTab.value = 'latest'
-    await fetchPublicJobs()
+    await resetAndFetchPublicJobs()
   }
 )
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect()
+    observer = null
+  }
+})
 </script>
 
 <style scoped>
@@ -234,6 +346,9 @@ watch(
 
 .left {
   width: 320px;
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
 }
 
 .right {
@@ -241,7 +356,16 @@ watch(
   min-width: 0;
 }
 
+.left-spacer {
+  height: 40px;
+  margin-bottom: 0px;
+}
+
 .mb {
+  margin-bottom: 12px;
+}
+
+.job-tabs {
   margin-bottom: 12px;
 }
 
@@ -267,6 +391,11 @@ watch(
   font-size: 13px;
   color: #303133;
   margin-bottom: 12px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .job-actions {
@@ -278,6 +407,15 @@ watch(
 
 .empty {
   padding: 10px 0;
+  color: #909399;
+  font-size: 12px;
+}
+
+.load-more-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
   color: #909399;
   font-size: 12px;
 }

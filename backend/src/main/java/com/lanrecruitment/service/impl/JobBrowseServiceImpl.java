@@ -35,7 +35,10 @@ public class JobBrowseServiceImpl implements JobBrowseService {
     }
 
     @Override
-    public List<JobCardVO> listPublic(String keyword, String city, String jobType, String tagIds) {
+    public List<JobCardVO> listPublic(String keyword, String city, String jobType, String tagIds, Long cursorId, Integer pageSize) {
+        int size = pageSize == null ? 10 : pageSize;
+        if (size < 1) size = 1;
+        if (size > 50) size = 50;
         LambdaQueryWrapper<Job> qw = new LambdaQueryWrapper<Job>()
                 .eq(Job::getStatus, 1)
                 .eq(Job::getAuditStatus, 1);
@@ -47,6 +50,9 @@ public class JobBrowseServiceImpl implements JobBrowseService {
         }
         if (jobType != null && !jobType.trim().isEmpty()) {
             qw.eq(Job::getJobType, jobType);
+        }
+        if (cursorId != null) {
+            qw.lt(Job::getId, cursorId);
         }
         List<Long> tagIdList = parseIds(tagIds);
         if (!tagIdList.isEmpty()) {
@@ -60,7 +66,7 @@ public class JobBrowseServiceImpl implements JobBrowseService {
             }
             qw.in(Job::getId, jobIds);
         }
-        List<Job> list = jobMapper.selectList(qw.orderByDesc(Job::getCreatedAt).orderByDesc(Job::getId).last("limit 50"));
+        List<Job> list = jobMapper.selectList(qw.orderByDesc(Job::getId).last("limit " + size));
         List<JobCardVO> res = new ArrayList<>();
         for (Job j : list) {
             res.add(toCard(j, null));
@@ -78,7 +84,7 @@ public class JobBrowseServiceImpl implements JobBrowseService {
     }
 
     @Override
-    public List<JobCardVO> recommend(Long resumeId) {
+    public List<JobCardVO> recommend(Long resumeId, Integer offset, Integer pageSize) {
         Long userId = StpUtil.getLoginIdAsLong();
         Resume resume = resolveResume(userId, resumeId);
 
@@ -94,7 +100,16 @@ public class JobBrowseServiceImpl implements JobBrowseService {
             res.add(toCard(j, score));
         }
         res.sort(Comparator.comparing(JobCardVO::getMatchScore, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
-        return res;
+        int off = offset == null ? 0 : offset;
+        if (off < 0) off = 0;
+        int size = pageSize == null ? 10 : pageSize;
+        if (size < 1) size = 1;
+        if (size > 50) size = 50;
+        if (off >= res.size()) {
+            return new ArrayList<>();
+        }
+        int end = Math.min(res.size(), off + size);
+        return new ArrayList<>(res.subList(off, end));
     }
 
     private Resume resolveResume(Long userId, Long resumeId) {
@@ -129,6 +144,7 @@ public class JobBrowseServiceImpl implements JobBrowseService {
         JobCardVO vo = new JobCardVO();
         vo.setId(j.getId());
         vo.setJobName(j.getJobName());
+        vo.setCompanyName(j.getCompanyName());
         vo.setCity(j.getCity());
         vo.setSalaryRange(j.getSalaryRange());
         vo.setJobType(j.getJobType());

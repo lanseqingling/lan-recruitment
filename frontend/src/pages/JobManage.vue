@@ -45,6 +45,9 @@
       <el-form-item label="岗位名称">
         <el-input v-model="editForm.jobName" />
       </el-form-item>
+      <el-form-item label="公司名称">
+        <el-input :model-value="(profile && profile.companyName) || ''" disabled />
+      </el-form-item>
       <el-form-item label="城市">
         <el-input v-model="editForm.city" />
       </el-form-item>
@@ -134,8 +137,7 @@
       </el-table-column>
       <el-table-column prop="applyStatus" label="状态" width="100">
         <template #default="{ row }">
-          <el-tag v-if="row.applyStatus === 0" type="info">已投递</el-tag>
-          <el-tag v-else-if="row.applyStatus === 1" type="warning">已查看</el-tag>
+          <el-tag v-if="row.applyStatus === 0 || row.applyStatus === 1" type="info">已投递</el-tag>
           <el-tag v-else-if="row.applyStatus === 2" type="success">通过</el-tag>
           <el-tag v-else type="danger">拒绝</el-tag>
         </template>
@@ -143,7 +145,6 @@
       <el-table-column label="操作" width="300">
         <template #default="{ row }">
           <el-button size="small" @click="openResumeDetail(row)">查看简历</el-button>
-          <el-button size="small" @click="updateApply(row, 1)">标记已看</el-button>
           <el-button size="small" type="success" @click="updateApply(row, 2)">通过</el-button>
           <el-button size="small" type="danger" @click="updateApply(row, 3)">拒绝</el-button>
         </template>
@@ -154,7 +155,7 @@
     </template>
   </el-dialog>
 
-  <el-drawer v-model="resumeVisible" title="简历详情" size="520px">
+  <el-drawer v-model="resumeVisible" title="简历详情" size="780px">
     <el-descriptions v-if="currentResume" :column="1" border>
       <el-descriptions-item label="简历名称">{{ currentResume.resumeName }}</el-descriptions-item>
       <el-descriptions-item label="姓名">{{ currentResume.realName }}</el-descriptions-item>
@@ -186,6 +187,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listTags } from '../api/tag'
+import { getProfile } from '../api/user'
 import {
   hrDeleteJob,
   hrListJobTags,
@@ -198,6 +200,7 @@ import {
 
 const jobs = ref([])
 const tags = ref([])
+const profile = ref(null)
 
 const editVisible = ref(false)
 const tagVisible = ref(false)
@@ -254,6 +257,14 @@ const filteredApplications = computed(() => {
 
 async function loadJobs() {
   jobs.value = await hrListJobs()
+}
+
+async function loadProfile() {
+  try {
+    profile.value = await getProfile()
+  } catch (e) {
+    profile.value = null
+  }
 }
 
 async function loadTags() {
@@ -353,6 +364,7 @@ function toAbsoluteUrl(path) {
 onMounted(async () => {
   await loadJobs()
   await loadTags()
+  await loadProfile()
 })
 </script>
 

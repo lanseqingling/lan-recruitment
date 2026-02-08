@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public class JobCardVO {
     private Long id;
     private String jobName;
+    private String companyName;
     private String city;
     private String salaryRange;
     private String jobType;
@@ -27,6 +28,14 @@ public class JobCardVO {
 
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
     public String getCity() {

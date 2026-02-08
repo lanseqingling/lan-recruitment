@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @TableName("sys_user")
@@ -19,6 +20,9 @@ public class SysUser {
 
     private String role;
 
+    @TableField("company_name")
+    private String companyName;
+
     private String avatar;
 
     private Integer status;
@@ -30,6 +34,11 @@ public class SysUser {
     private String realName;
 
     private String phone;
+
+    private String school;
+
+    @TableField("graduate_date")
+    private LocalDate graduateDate;
 
     @TableField("created_at")
     private LocalDateTime createdAt;
@@ -77,6 +86,14 @@ public class SysUser {
         this.role = role;
     }
 
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
     public String getAvatar() {
         return avatar;
     }
@@ -115,6 +132,22 @@ public class SysUser {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
+    }
+
+    public LocalDate getGraduateDate() {
+        return graduateDate;
+    }
+
+    public void setGraduateDate(LocalDate graduateDate) {
+        this.graduateDate = graduateDate;
     }
 
     public LocalDateTime getCreatedAt() {

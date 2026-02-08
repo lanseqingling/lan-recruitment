@@ -40,11 +40,14 @@ public class UserServiceImpl implements UserService {
         vo.setUsername(u.getUsername());
         vo.setEmail(u.getEmail());
         vo.setRole(u.getRole());
+        vo.setCompanyName(u.getCompanyName());
         vo.setAvatar(u.getAvatar());
         vo.setStatus(u.getStatus());
         vo.setAuditStatus(u.getAuditStatus());
         vo.setRealName(u.getRealName());
         vo.setPhone(u.getPhone());
+        vo.setSchool(u.getSchool());
+        vo.setGraduateDate(u.getGraduateDate());
         return vo;
     }
 
@@ -53,6 +56,9 @@ public class UserServiceImpl implements UserService {
         SysUser u = currentUser();
         u.setRealName(dto.getRealName());
         u.setPhone(dto.getPhone());
+        u.setCompanyName(dto.getCompanyName());
+        u.setSchool(dto.getSchool());
+        u.setGraduateDate(dto.getGraduateDate());
         u.setUpdatedAt(LocalDateTime.now());
         sysUserMapper.updateById(u);
     }

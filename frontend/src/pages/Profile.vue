@@ -18,10 +18,10 @@
       </div>
     </div>
 
-    <el-descriptions v-if="me" :column="1" border>
+    <el-descriptions v-if="me" class="base-info" :column="1" border>
       <el-descriptions-item label="用户ID">{{ me.id }}</el-descriptions-item>
       <el-descriptions-item label="用户名">{{ me.username }}</el-descriptions-item>
-      <el-descriptions-item label="角色">{{ me.role }}</el-descriptions-item>
+      <el-descriptions-item label="角色">{{ roleLabel }}</el-descriptions-item>
     </el-descriptions>
 
     <el-divider />
@@ -33,20 +33,33 @@
       <el-form-item label="手机号">
         <el-input v-model="profileForm.phone" />
       </el-form-item>
+      <el-form-item label="学校">
+        <el-input v-model="profileForm.school" />
+      </el-form-item>
+      <el-form-item label="毕业时间">
+        <el-date-picker v-model="profileForm.graduateDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+      </el-form-item>
+      <el-form-item v-if="me && me.role === 'HR'" label="公司名称">
+        <el-input v-model="profileForm.companyName" />
+      </el-form-item>
       <el-button type="primary" @click="saveProfile">保存资料</el-button>
     </el-form>
 
     <el-divider />
 
-    <el-form :model="pwdForm" label-position="top" style="max-width: 520px">
-      <el-form-item label="旧密码">
-        <el-input v-model="pwdForm.oldPassword" type="password" show-password />
-      </el-form-item>
-      <el-form-item label="新密码">
-        <el-input v-model="pwdForm.newPassword" type="password" show-password />
-      </el-form-item>
-      <el-button type="primary" @click="savePassword">修改密码</el-button>
-    </el-form>
+    <el-collapse v-model="pwdActive" style="max-width: 520px">
+      <el-collapse-item title="修改密码" name="pwd">
+        <el-form :model="pwdForm" label-position="top">
+          <el-form-item label="旧密码">
+            <el-input v-model="pwdForm.oldPassword" type="password" show-password />
+          </el-form-item>
+          <el-form-item label="新密码">
+            <el-input v-model="pwdForm.newPassword" type="password" show-password />
+          </el-form-item>
+          <el-button type="primary" @click="savePassword">修改密码</el-button>
+        </el-form>
+      </el-collapse-item>
+    </el-collapse>
   </el-card>
 </template>
 
@@ -60,8 +73,17 @@ const router = useRouter()
 const me = ref(null)
 const profile = ref(null)
 const uploading = ref(false)
-const profileForm = reactive({ realName: '', phone: '' })
+const profileForm = reactive({ realName: '', phone: '', school: '', graduateDate: '', companyName: '' })
 const pwdForm = reactive({ oldPassword: '', newPassword: '' })
+const pwdActive = ref([])
+
+const roleLabel = computed(() => {
+  const r = me.value && me.value.role
+  if (r === 'USER') return '求职者'
+  if (r === 'HR') return 'HR'
+  if (r === 'ADMIN') return '管理员'
+  return r || ''
+})
 
 const avatarFallback = computed(() => {
   const name = (me.value && me.value.username) || 'U'
@@ -82,10 +104,19 @@ async function load() {
   profile.value = await getProfile()
   profileForm.realName = profile.value.realName || ''
   profileForm.phone = profile.value.phone || ''
+  profileForm.school = profile.value.school || ''
+  profileForm.graduateDate = profile.value.graduateDate || ''
+  profileForm.companyName = profile.value.companyName || ''
 }
 
 async function saveProfile() {
-  await updateProfile(profileForm.realName, profileForm.phone)
+  await updateProfile({
+    realName: profileForm.realName,
+    phone: profileForm.phone,
+    school: profileForm.school,
+    graduateDate: profileForm.graduateDate || null,
+    companyName: profileForm.companyName
+  })
   window.dispatchEvent(new Event('profile-changed'))
   ElMessage.success('资料已保存')
 }
@@ -148,5 +179,11 @@ onMounted(load)
 .avatar-name {
   font-weight: 600;
   color: #303133;
+}
+
+.base-info :deep(.el-descriptions__label) {
+  width: 64px;
+  min-width: 64px;
+  white-space: nowrap;
 }
 </style>

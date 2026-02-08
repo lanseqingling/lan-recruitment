@@ -17,6 +17,9 @@ public class Job {
     @TableField("job_name")
     private String jobName;
 
+    @TableField("company_name")
+    private String companyName;
+
     private String city;
 
     @TableField("salary_range")
@@ -60,6 +63,14 @@ public class Job {
 
     public void setJobName(String jobName) {
         this.jobName = jobName;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
     public String getCity() {
