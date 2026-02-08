@@ -11,12 +11,15 @@ import com.lanrecruitment.domain.entity.Job;
 import com.lanrecruitment.domain.entity.JobApply;
 import com.lanrecruitment.domain.entity.JobTag;
 import com.lanrecruitment.domain.entity.Resume;
+import com.lanrecruitment.domain.entity.ResumeTag;
 import com.lanrecruitment.domain.entity.Tag;
+import com.lanrecruitment.domain.vo.ResumeTagVO;
 import com.lanrecruitment.exception.BizException;
 import com.lanrecruitment.mapper.JobApplyMapper;
 import com.lanrecruitment.mapper.JobMapper;
 import com.lanrecruitment.mapper.JobTagMapper;
 import com.lanrecruitment.mapper.ResumeMapper;
+import com.lanrecruitment.mapper.ResumeTagMapper;
 import com.lanrecruitment.mapper.TagMapper;
 import com.lanrecruitment.service.HrJobService;
 import com.lanrecruitment.service.MatchService;
@@ -41,6 +44,7 @@ public class HrJobServiceImpl implements HrJobService {
     private final JobTagMapper jobTagMapper;
     private final JobApplyMapper jobApplyMapper;
     private final ResumeMapper resumeMapper;
+    private final ResumeTagMapper resumeTagMapper;
     private final TagMapper tagMapper;
     private final MatchService matchService;
 
@@ -49,6 +53,7 @@ public class HrJobServiceImpl implements HrJobService {
             JobTagMapper jobTagMapper,
             JobApplyMapper jobApplyMapper,
             ResumeMapper resumeMapper,
+            ResumeTagMapper resumeTagMapper,
             TagMapper tagMapper,
             MatchService matchService
     ) {
@@ -56,6 +61,7 @@ public class HrJobServiceImpl implements HrJobService {
         this.jobTagMapper = jobTagMapper;
         this.jobApplyMapper = jobApplyMapper;
         this.resumeMapper = resumeMapper;
+        this.resumeTagMapper = resumeTagMapper;
         this.tagMapper = tagMapper;
         this.matchService = matchService;
     }
@@ -209,6 +215,33 @@ public class HrJobServiceImpl implements HrJobService {
             resumeMap.put(r.getId(), r);
         }
 
+        Map<Long, List<ResumeTagVO>> resumeTagMap = new HashMap<>();
+        if (!resumeIds.isEmpty()) {
+            List<ResumeTag> rts = resumeTagMapper.selectList(new LambdaQueryWrapper<ResumeTag>().in(ResumeTag::getResumeId, resumeIds));
+            Set<Long> tagIds = new HashSet<>();
+            for (ResumeTag rt : rts) {
+                if (rt.getTagId() != null) tagIds.add(rt.getTagId());
+            }
+            List<Tag> tags = tagIds.isEmpty() ? new ArrayList<>() : tagMapper.selectBatchIds(tagIds);
+            Map<Long, Tag> tagMap = new HashMap<>();
+            for (Tag t : tags) {
+                tagMap.put(t.getId(), t);
+            }
+
+            for (ResumeTag rt : rts) {
+                ResumeTagVO tv = new ResumeTagVO();
+                tv.setTagId(rt.getTagId());
+                tv.setProficiency(rt.getProficiency());
+                tv.setWeight(rt.getWeight());
+                Tag t = tagMap.get(rt.getTagId());
+                if (t != null) {
+                    tv.setTagName(t.getTagName());
+                    tv.setTagType(t.getTagType());
+                }
+                resumeTagMap.computeIfAbsent(rt.getResumeId(), k -> new ArrayList<>()).add(tv);
+            }
+        }
+
         List<HrJobApplicationVO> res = new ArrayList<>();
         for (JobApply a : applies) {
             HrJobApplicationVO vo = new HrJobApplicationVO();
@@ -221,6 +254,7 @@ public class HrJobServiceImpl implements HrJobService {
                 vo.setResume(toResumeVO(r));
                 vo.setMatchScore(matchService.computeAndSave(r.getId(), job.getId()));
             }
+            vo.setResumeTags(resumeTagMap.getOrDefault(a.getResumeId(), new ArrayList<>()));
             res.add(vo);
         }
         res.sort(Comparator.comparing(HrJobApplicationVO::getMatchScore, Comparator.nullsLast(Comparator.naturalOrder())).reversed());

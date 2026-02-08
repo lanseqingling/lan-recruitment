@@ -31,3 +31,11 @@ export function applyJob(jobId, resumeId) {
 export function listMyApplies() {
   return request.get('/api/user/apply/list')
 }
+
+export function listMyApplyDetail() {
+  return request.get('/api/user/apply/list/detail')
+}
+
+export function updateApplyResume(applyId, resumeId) {
+  return request.post('/api/user/apply/resume/update', { applyId, resumeId })
+}

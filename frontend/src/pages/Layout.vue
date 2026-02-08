@@ -69,6 +69,10 @@
             <el-icon><Document /></el-icon>
             <span>简历管理</span>
           </el-menu-item>
+          <el-menu-item v-if="role === 'USER'" index="/apply">
+            <el-icon><Tickets /></el-icon>
+            <span>投递记录</span>
+          </el-menu-item>
           <el-menu-item v-if="role === 'HR'" index="/job">
             <el-icon><Briefcase /></el-icon>
             <span>岗位管理</span>
@@ -103,7 +107,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Bell, Briefcase, CircleCheck, CollectionTag, Document, Expand, Fold, House } from '@element-plus/icons-vue'
+import { Bell, Briefcase, CircleCheck, CollectionTag, Document, Expand, Fold, House, Tickets } from '@element-plus/icons-vue'
 import { logout } from '../api/auth'
 import { listNotices } from '../api/notice'
 import { getProfile } from '../api/user'

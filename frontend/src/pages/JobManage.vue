@@ -98,11 +98,40 @@
   </el-dialog>
 
   <el-dialog v-model="applyVisible" title="投递简历列表" width="860px">
-    <el-table :data="applications" size="small" style="width: 100%">
+    <div class="apply-filters">
+      <el-select v-model="applyFilter.education" size="small" clearable placeholder="学历" style="width: 140px">
+        <el-option v-for="e in educationOptions" :key="e" :label="e" :value="e" />
+      </el-select>
+      <el-select
+        v-model="applyFilter.tagIds"
+        size="small"
+        multiple
+        filterable
+        clearable
+        placeholder="标签筛选"
+        style="width: 320px"
+      >
+        <el-option v-for="t in tags" :key="t.id" :label="t.tagName" :value="t.id" />
+      </el-select>
+      <el-input-number v-model="applyFilter.minScore" size="small" :min="0" :max="1" :step="0.05" controls-position="right" />
+      <div class="apply-filter-tip">最低匹配度</div>
+      <el-button size="small" @click="resetApplyFilter">重置</el-button>
+    </div>
+
+    <el-table :data="filteredApplications" size="small" style="width: 100%">
       <el-table-column prop="resume.realName" label="姓名" width="100" />
       <el-table-column prop="resume.education" label="学历" width="110" />
       <el-table-column prop="resume.city" label="城市" width="100" />
       <el-table-column prop="matchScore" label="匹配度" width="100" />
+      <el-table-column label="标签" min-width="180">
+        <template #default="{ row }">
+          <div class="apply-tags">
+            <el-tag v-for="t in row.resumeTags || []" :key="t.tagId" size="small" effect="plain">
+              {{ t.tagName }}
+            </el-tag>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column prop="applyStatus" label="状态" width="100">
         <template #default="{ row }">
           <el-tag v-if="row.applyStatus === 0" type="info">已投递</el-tag>
@@ -111,8 +140,9 @@
           <el-tag v-else type="danger">拒绝</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="220">
+      <el-table-column label="操作" width="300">
         <template #default="{ row }">
+          <el-button size="small" @click="openResumeDetail(row)">查看简历</el-button>
           <el-button size="small" @click="updateApply(row, 1)">标记已看</el-button>
           <el-button size="small" type="success" @click="updateApply(row, 2)">通过</el-button>
           <el-button size="small" type="danger" @click="updateApply(row, 3)">拒绝</el-button>
@@ -123,10 +153,37 @@
       <el-button @click="applyVisible = false">关闭</el-button>
     </template>
   </el-dialog>
+
+  <el-drawer v-model="resumeVisible" title="简历详情" size="520px">
+    <el-descriptions v-if="currentResume" :column="1" border>
+      <el-descriptions-item label="简历名称">{{ currentResume.resumeName }}</el-descriptions-item>
+      <el-descriptions-item label="姓名">{{ currentResume.realName }}</el-descriptions-item>
+      <el-descriptions-item label="城市">{{ currentResume.city }}</el-descriptions-item>
+      <el-descriptions-item label="学历">{{ currentResume.education }}</el-descriptions-item>
+      <el-descriptions-item label="工作年限">{{ currentResume.workYears }}</el-descriptions-item>
+      <el-descriptions-item label="期望岗位">{{ currentResume.expectJobType }}</el-descriptions-item>
+      <el-descriptions-item label="期望薪资">{{ currentResume.expectSalary }}</el-descriptions-item>
+      <el-descriptions-item label="工作描述">{{ currentResume.workDesc }}</el-descriptions-item>
+      <el-descriptions-item v-if="currentResume.fileUrl" label="附件简历">
+        <a :href="toAbsoluteUrl(currentResume.fileUrl)" target="_blank" rel="noopener noreferrer">
+          {{ currentResume.fileName || currentResume.fileUrl }}
+        </a>
+      </el-descriptions-item>
+    </el-descriptions>
+
+    <div v-if="currentResumeTags.length > 0" class="resume-tag-block">
+      <div class="resume-tag-title">简历标签</div>
+      <div class="apply-tags">
+        <el-tag v-for="t in currentResumeTags" :key="t.tagId" size="small" effect="plain">
+          {{ t.tagName }}
+        </el-tag>
+      </div>
+    </div>
+  </el-drawer>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listTags } from '../api/tag'
 import {
@@ -145,9 +202,12 @@ const tags = ref([])
 const editVisible = ref(false)
 const tagVisible = ref(false)
 const applyVisible = ref(false)
+const resumeVisible = ref(false)
 
 const currentJob = ref(null)
 const applications = ref([])
+const currentResume = ref(null)
+const currentResumeTags = ref([])
 
 const editForm = reactive({
   id: null,
@@ -161,6 +221,36 @@ const editForm = reactive({
 
 const checkedMap = reactive({})
 const proficiencyMap = reactive({})
+const applyFilter = reactive({ education: '', tagIds: [], minScore: null })
+
+const educationOptions = computed(() => {
+  const set = new Set()
+  ;(applications.value || []).forEach((a) => {
+    const e = a && a.resume && a.resume.education
+    if (e) set.add(e)
+  })
+  return Array.from(set)
+})
+
+const filteredApplications = computed(() => {
+  const list = Array.isArray(applications.value) ? applications.value : []
+  const edu = (applyFilter.education || '').trim()
+  const tagIds = Array.isArray(applyFilter.tagIds) ? applyFilter.tagIds : []
+  const minScore = applyFilter.minScore
+  return list.filter((a) => {
+    if (edu && (!a.resume || a.resume.education !== edu)) return false
+    if (minScore != null) {
+      const s = a.matchScore == null ? null : Number(a.matchScore)
+      if (s == null || Number.isNaN(s) || s < minScore) return false
+    }
+    if (tagIds.length > 0) {
+      const ids = (a.resumeTags || []).map((t) => t.tagId)
+      const hit = tagIds.some((id) => ids.includes(id))
+      if (!hit) return false
+    }
+    return true
+  })
+})
 
 async function loadJobs() {
   jobs.value = await hrListJobs()
@@ -232,12 +322,32 @@ async function openApplies(row) {
   currentJob.value = row
   applications.value = await hrListApplications(row.id)
   applyVisible.value = true
+  resetApplyFilter()
 }
 
 async function updateApply(row, status) {
   await hrUpdateApplyStatus(row.applyId, status)
   ElMessage.success('已更新')
   applications.value = await hrListApplications(currentJob.value.id)
+}
+
+function resetApplyFilter() {
+  applyFilter.education = ''
+  applyFilter.tagIds = []
+  applyFilter.minScore = null
+}
+
+function openResumeDetail(row) {
+  currentResume.value = (row && row.resume) || null
+  currentResumeTags.value = (row && row.resumeTags) || []
+  resumeVisible.value = true
+}
+
+function toAbsoluteUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  const base = import.meta.env.VITE_API_BASE_URL || ''
+  return base + path
 }
 
 onMounted(async () => {
@@ -256,5 +366,33 @@ onMounted(async () => {
 .tag-tip {
   font-size: 12px;
   color: #606266;
+}
+
+.apply-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.apply-filter-tip {
+  font-size: 12px;
+  color: #606266;
+}
+
+.apply-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resume-tag-block {
+  margin-top: 12px;
+}
+
+.resume-tag-title {
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 8px;
 }
 </style>

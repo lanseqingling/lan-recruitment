@@ -5,6 +5,7 @@ import Register from '../pages/Register.vue'
 import Home from '../pages/Home.vue'
 import Profile from '../pages/Profile.vue'
 import ResumeManage from '../pages/ResumeManage.vue'
+import ApplyManage from '../pages/ApplyManage.vue'
 import JobManage from '../pages/JobManage.vue'
 import TagManage from '../pages/TagManage.vue'
 import NoticeManage from '../pages/NoticeManage.vue'
@@ -21,6 +22,7 @@ const routes = [
       { path: 'home', component: Home },
       { path: 'profile', component: Profile },
       { path: 'resume', component: ResumeManage },
+      { path: 'apply', component: ApplyManage },
       { path: 'job', component: JobManage },
       { path: 'audit', component: AuditManage },
       { path: 'tag', component: TagManage },
@@ -43,6 +45,7 @@ router.beforeEach((to) => {
 
   const role = localStorage.getItem('role')
   if (to.path === '/resume' && role !== 'USER') return '/home'
+  if (to.path === '/apply' && role !== 'USER') return '/home'
   if (to.path === '/job' && role !== 'HR') return '/home'
   if ((to.path === '/audit' || to.path === '/tag' || to.path === '/notice') && role !== 'ADMIN') return '/home'
   return true

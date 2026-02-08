@@ -1,16 +1,13 @@
 package com.lanrecruitment.domain.vo;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-public class HrJobApplicationVO {
+public class UserApplyVO {
     private Long applyId;
     private Integer applyStatus;
     private LocalDateTime applyTime;
+    private JobCardVO job;
     private ResumeVO resume;
-    private List<ResumeTagVO> resumeTags;
-    private BigDecimal matchScore;
 
     public Long getApplyId() {
         return applyId;
@@ -36,6 +33,14 @@ public class HrJobApplicationVO {
         this.applyTime = applyTime;
     }
 
+    public JobCardVO getJob() {
+        return job;
+    }
+
+    public void setJob(JobCardVO job) {
+        this.job = job;
+    }
+
     public ResumeVO getResume() {
         return resume;
     }
@@ -43,20 +48,5 @@ public class HrJobApplicationVO {
     public void setResume(ResumeVO resume) {
         this.resume = resume;
     }
-
-    public List<ResumeTagVO> getResumeTags() {
-        return resumeTags;
-    }
-
-    public void setResumeTags(List<ResumeTagVO> resumeTags) {
-        this.resumeTags = resumeTags;
-    }
-
-    public BigDecimal getMatchScore() {
-        return matchScore;
-    }
-
-    public void setMatchScore(BigDecimal matchScore) {
-        this.matchScore = matchScore;
-    }
 }
+

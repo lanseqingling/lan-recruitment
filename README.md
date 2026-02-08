@@ -1,12 +1,13 @@
 # lan-recruitment（毕业设计-智能招聘系统）
 
+## 项目结构
+
 本仓库为 Monorepo 结构：
 
 - `/backend`：后端（Java 8 + Spring Boot + MyBatis-Plus + Sa-Token + MySQL）
 - `/frontend`：前端（Vue 3 + Vite + Element Plus + Axios）
 - `/scripts`：一键启动脚本
 - `/docs`：需求与规范文档
-
 
 ## 后端启动
 
